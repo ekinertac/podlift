@@ -20,7 +20,62 @@ Complete guide to installing and setting up podlift.
 
 ## Install podlift
 
-### Option 1: Install Script (Recommended)
+Choose the method that works best for you:
+
+| Method | Best For | Updates |
+|--------|----------|---------|
+| Package Manager | End users, automatic updates | `brew upgrade` / `apt upgrade` |
+| Install Script | Quick setup, any platform | Re-run script |
+| Download Binary | Offline installs, specific versions | Manual download |
+| Go Install | Go developers | `go install ...@latest` |
+| Build from Source | Contributors, custom builds | `git pull && go build` |
+
+### Option 1: Package Manager (Recommended)
+
+#### macOS (Homebrew)
+
+```bash
+brew install ekinertac/tap/podlift
+```
+
+#### Linux (apt)
+
+```bash
+# Add podlift repository
+curl -fsSL https://apt.podlift.sh/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/podlift.gpg
+echo "deb [signed-by=/usr/share/keyrings/podlift.gpg] https://apt.podlift.sh stable main" | sudo tee /etc/apt/sources.list.d/podlift.list
+
+# Install
+sudo apt update
+sudo apt install podlift
+```
+
+#### Linux (yum/dnf)
+
+```bash
+# Add podlift repository
+sudo tee /etc/yum.repos.d/podlift.repo <<EOF
+[podlift]
+name=podlift
+baseurl=https://rpm.podlift.sh/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.podlift.sh/gpg.key
+EOF
+
+# Install
+sudo dnf install podlift
+# or: sudo yum install podlift
+```
+
+#### Arch Linux (AUR)
+
+```bash
+yay -S podlift-bin
+# or: paru -S podlift-bin
+```
+
+### Option 2: Install Script
 
 ```bash
 curl -sSL https://podlift.sh/install.sh | sh
@@ -28,33 +83,48 @@ curl -sSL https://podlift.sh/install.sh | sh
 
 This downloads the latest binary for your platform and installs it to `/usr/local/bin`.
 
-### Option 2: Download Binary
+### Option 3: Download Binary
 
-Visit [GitHub Releases](https://github.com/yourusername/podlift/releases) and download for your platform:
+Visit [GitHub Releases](https://github.com/ekinertac/podlift/releases) and download for your platform:
 
 ```bash
 # Linux (amd64)
-wget https://github.com/yourusername/podlift/releases/latest/download/podlift-linux-amd64
+wget https://github.com/ekinertac/podlift/releases/latest/download/podlift-linux-amd64
 chmod +x podlift-linux-amd64
 sudo mv podlift-linux-amd64 /usr/local/bin/podlift
 
 # macOS (arm64 - M1/M2)
-wget https://github.com/yourusername/podlift/releases/latest/download/podlift-darwin-arm64
+wget https://github.com/ekinertac/podlift/releases/latest/download/podlift-darwin-arm64
 chmod +x podlift-darwin-arm64
 sudo mv podlift-darwin-arm64 /usr/local/bin/podlift
 
 # macOS (amd64 - Intel)
-wget https://github.com/yourusername/podlift/releases/latest/download/podlift-darwin-amd64
+wget https://github.com/ekinertac/podlift/releases/latest/download/podlift-darwin-amd64
 chmod +x podlift-darwin-amd64
 sudo mv podlift-darwin-amd64 /usr/local/bin/podlift
 ```
 
-### Option 3: Build from Source
+### Option 3: Go Install
 
-Requires Go 1.21 or later:
+If you have Go 1.21+ installed, use Go's package manager:
 
 ```bash
-git clone https://github.com/yourusername/podlift.git
+go install github.com/ekinertac/podlift@latest
+```
+
+This compiles and installs to `$GOPATH/bin` (usually `~/go/bin`).
+
+Make sure `~/go/bin` is in your PATH:
+```bash
+export PATH=$PATH:~/go/bin
+```
+
+### Option 4: Build from Source
+
+For development or custom builds:
+
+```bash
+git clone https://github.com/ekinertac/podlift.git
 cd podlift
 go build -o podlift .
 sudo mv podlift /usr/local/bin/
@@ -453,12 +523,29 @@ podlift version
 
 ### Upgrade to Latest
 
-Using install script:
+**Package managers:**
+```bash
+# macOS
+brew upgrade podlift
+
+# Linux (apt)
+sudo apt update && sudo apt upgrade podlift
+
+# Linux (yum/dnf)
+sudo dnf upgrade podlift
+```
+
+**Go install:**
+```bash
+go install github.com/ekinertac/podlift@latest
+```
+
+**Install script:**
 ```bash
 curl -sSL https://podlift.sh/install.sh | sh
 ```
 
-Or manually download latest release.
+**Manual:** Download latest release from GitHub.
 
 ### Verify Upgrade
 
@@ -556,5 +643,5 @@ All cloud providers work the same way:
 - [Troubleshooting](troubleshooting.md)
 - [How It Works](how-it-works.md)
 
-Still stuck? [Open an issue](https://github.com/yourusername/podlift/issues).
+Still stuck? [Open an issue](https://github.com/ekinertac/podlift/issues).
 

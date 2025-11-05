@@ -773,7 +773,7 @@ Migrating from another tool? We want to help!
 - [Configuration Reference](configuration.md)
 - [Troubleshooting](troubleshooting.md)
 
-Still stuck? [Open an issue](https://github.com/yourusername/podlift/issues) with:
+Still stuck? [Open an issue](https://github.com/ekinertac/podlift/issues) with:
 - What you're migrating from
 - Your current setup
 - What's not working

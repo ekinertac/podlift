@@ -576,7 +576,7 @@ If you're still stuck:
 1. **Check logs**: `podlift logs web`
 2. **Check server state**: SSH and inspect manually
 3. **Validate config**: `podlift validate --verbose`
-4. **Search issues**: https://github.com/yourusername/podlift/issues
+4. **Search issues**: https://github.com/ekinertac/podlift/issues
 5. **Ask for help**: Create new issue with:
    - podlift version (`podlift version`)
    - Configuration (sanitize secrets)
