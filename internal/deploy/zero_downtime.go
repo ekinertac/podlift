@@ -9,6 +9,7 @@ import (
 	"github.com/ekinertac/podlift/internal/docker"
 	"github.com/ekinertac/podlift/internal/nginx"
 	"github.com/ekinertac/podlift/internal/ssh"
+	"github.com/ekinertac/podlift/internal/ssl"
 	"github.com/ekinertac/podlift/internal/ui"
 )
 
@@ -147,16 +148,30 @@ func ZeroDowntimeDeploy(opts ZeroDowntimeDeployOptions) error {
 		}
 	}
 
-	// Update upstream to point to new containers
+	// Check for SSL configuration
 	sslCfg := nginx.SSLConfig{Enabled: false}
-	if cfg.Proxy != nil && cfg.Proxy.SSL != "" && cfg.Proxy.SSL != "false" {
-		// SSL configuration will be added in Phase 3
-		sslCfg.Enabled = false // For now
-	}
-
 	domain := cfg.Domain
 	if domain == "" {
 		domain = opts.Server.Host
+	}
+
+	if cfg.Proxy != nil && cfg.Proxy.SSL == "letsencrypt" {
+		// Check if certificate exists
+		certbotMgr := ssl.NewCertbotManager(client)
+		certExists, _ := certbotMgr.CheckCertificate(domain)
+		
+		if certExists {
+			sslCfg = nginx.SSLConfig{
+				Enabled:     true,
+				CertPath:    certbotMgr.GetCertificatePath(domain),
+				KeyPath:     certbotMgr.GetKeyPath(domain),
+				LetsEncrypt: true,
+			}
+			fmt.Println(ui.Success("  Using SSL certificate"))
+		} else {
+			fmt.Println(ui.Warning("  SSL configured but certificate not found"))
+			fmt.Println(ui.Info("  Run: podlift ssl setup"))
+		}
 	}
 
 	if err := nginxMgr.UpdateUpstream(cfg.Service, newUpstreams, domain, sslCfg); err != nil {
