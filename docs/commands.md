@@ -205,7 +205,7 @@ Service names must be unique per server.
 
 ## podlift deploy
 
-Deploy your application to all configured servers.
+Deploy your application to all configured servers with zero-downtime (default).
 
 ```bash
 podlift deploy
