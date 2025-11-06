@@ -361,7 +361,23 @@ If state file is lost, podlift rebuilds it from Docker labels.
 
 ## Multi-Server Deployment
 
-With multiple servers, deployment is serial by default.
+With multiple servers, podlift:
+
+1. **Deploys to all servers** (serial by default, `--parallel` for simultaneous)
+2. **Automatically sets up nginx load balancing** on the primary server
+3. **Configures upstreams** to distribute traffic across all servers
+
+### Automatic Load Balancing
+
+When you deploy to 2+ servers, podlift automatically:
+
+- Installs nginx on the primary server (labeled `primary` or first server)
+- Configures upstream backends pointing to all servers
+- Uses `least_conn` algorithm for connection distribution
+- Sets up health checks (`max_fails=3`, `fail_timeout=30s`)
+- Maintains persistent connections (`keepalive 32`)
+
+No additional configuration required - it just works.
 
 ```yaml
 servers:

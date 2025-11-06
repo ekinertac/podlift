@@ -52,7 +52,6 @@ Installs and configures everything needed on your servers:
 
 - `--no-firewall` - Skip firewall configuration
 - `--no-security` - Skip security hardening
-- `--create-user <name>` - Create deploy user instead of using root
 
 ### What It Does
 
@@ -213,10 +212,11 @@ podlift deploy
 
 ### Flags
 
-- `--scp` - Use SCP to transfer image (default if no registry configured)
-- `--skip-build` - Skip building, use existing image
-- `--skip-healthcheck` - Don't wait for health checks
-- `--parallel` - Deploy to all servers simultaneously (default: serial)
+- `--skip-build` - Skip building Docker image
+- `--skip-healthcheck` - Skip health check
+- `--parallel` - Deploy to all servers in parallel (default: serial)
+- `--dry-run` - Show what would happen without executing
+- `--zero-downtime` - Use zero-downtime deployment with nginx (default: true)
 
 ### Process
 
@@ -372,7 +372,7 @@ podlift ps
 
 ### Flags
 
-- `--all` - Show all containers (including stopped)
+- `--all`, `-a` - Show all containers (including stopped)
 
 ### Output
 
@@ -404,10 +404,9 @@ podlift logs <service>
 
 ### Flags
 
-- `--follow` - Stream logs in real-time
-- `--tail <n>` - Show last N lines (default: 100)
-- `--since <time>` - Show logs since timestamp (e.g., "1h", "30m")
-- `--all` - Show logs from all replicas
+- `--follow`, `-f` - Stream logs in real-time
+- `--tail <n>`, `-n` - Show last N lines (default: 100)
+- `--since <time>` - Show logs since timestamp (e.g., "2h", "30m")
 
 ### Examples
 
@@ -421,9 +420,9 @@ Stream logs:
 podlift logs web --follow
 ```
 
-Last 500 lines from all web containers:
+Last 500 lines:
 ```bash
-podlift logs web --tail 500 --all
+podlift logs web --tail 500
 ```
 
 Logs from last hour:
@@ -450,7 +449,7 @@ podlift exec <service> <command>
 
 ### Flags
 
-- `--replica <n>` - Execute on specific replica (default: first)
+- `--replica <n>` - Execute on specific replica (default: 1)
 
 ### Examples
 

@@ -244,7 +244,17 @@ Deploying to all servers in parallel...
 
 ## Load Balancing
 
-Multiple servers serving the same app.
+**Automatic with 2+ servers.** podlift sets up nginx load balancing automatically when you deploy to multiple servers - no extra configuration needed.
+
+### How It Works
+
+When deploying to multiple servers, podlift:
+
+1. Detects multiple servers in configuration
+2. Deploys your application to all of them
+3. **Automatically configures nginx** on the primary server to load balance across all servers
+4. Uses `least_conn` algorithm for optimal distribution
+5. Sets up health checks and connection pooling
 
 ### Configuration
 
