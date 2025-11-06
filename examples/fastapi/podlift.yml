@@ -1,0 +1,19 @@
+service: fastapi-example
+image: fastapi-example
+
+servers:
+  - host: 192.168.64.7
+    user: ubuntu
+    ssh_key: ~/.ssh/id_rsa
+
+services:
+  web:
+    port: 8000
+    replicas: 2
+    healthcheck:
+      path: /health
+      expect: [200]
+    env:
+      ENVIRONMENT: staging
+      SECRET_KEY: test-secret-key
+      APP_VERSION: ${GIT_COMMIT}
