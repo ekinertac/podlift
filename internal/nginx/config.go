@@ -114,7 +114,7 @@ func GenerateSymlinkPath(serviceName string) string {
 func GenerateEnableCommand(serviceName string) string {
 	sitePath := GenerateSitePath(serviceName)
 	symlinkPath := GenerateSymlinkPath(serviceName)
-	return fmt.Sprintf("ln -sf %s %s", sitePath, symlinkPath)
+	return fmt.Sprintf("sudo ln -sf %s %s", sitePath, symlinkPath)
 }
 
 // GenerateReloadCommand generates command to reload nginx

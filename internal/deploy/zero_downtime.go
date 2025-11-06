@@ -49,7 +49,14 @@ func ZeroDowntimeDeploy(opts ZeroDowntimeDeployOptions) error {
 	fmt.Println(ui.Info("Starting new containers..."))
 	
 	var newUpstreams []nginx.Upstream
+	
+	// Find available temp ports (avoid conflicts with old containers)
 	tempPortStart := 9000
+	if len(oldContainers) > 0 {
+		// If old containers exist, they might be using 9000+
+		// Use 9100+ for new containers
+		tempPortStart = 9100
+	}
 
 	for serviceName, service := range cfg.Services {
 		for replica := 1; replica <= service.Replicas; replica++ {
