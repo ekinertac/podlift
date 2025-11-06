@@ -179,6 +179,13 @@ func Deploy(opts DeployOptions) error {
 		fmt.Println()
 	}
 
+	// Setup load balancer if multiple servers
+	if len(allServers) > 1 && !opts.DryRun {
+		if err := SetupLoadBalancer(cfg, version); err != nil {
+			return fmt.Errorf("load balancer setup failed: %w", err)
+		}
+	}
+
 	fmt.Println(ui.Title("Deployment successful!"))
 	fmt.Println()
 	fmt.Println(ui.Info(fmt.Sprintf("Deployed: %s", version)))
