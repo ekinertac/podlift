@@ -20,19 +20,17 @@ podlift deploys your Docker containers to any server with SSH access. No black b
 
 Install podlift:
 ```bash
-# macOS
+# Quick install (Linux/macOS)
+curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
+
+# macOS (Homebrew)
 brew install ekinertac/tap/podlift
 
-# Linux (Debian/Ubuntu)
-curl -fsSL https://apt.podlift.sh/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/podlift.gpg
-echo "deb [signed-by=/usr/share/keyrings/podlift.gpg] https://apt.podlift.sh stable main" | sudo tee /etc/apt/sources.list.d/podlift.list
-sudo apt update && sudo apt install podlift
-
-# Or use install script
-curl -sSL https://podlift.sh/install.sh | sh
-
 # Or with Go
-go install github.com/ekinertac/podlift@latest
+go install github.com/ekinertac/podlift/cmd/podlift@latest
+
+# Or download binary from releases
+# https://github.com/ekinertac/podlift/releases
 ```
 
 Initialize your project:

@@ -1,81 +1,80 @@
-.PHONY: build run test clean help install
+# podlift Makefile
 
-# Build variables
-VERSION ?= dev
-COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-LDFLAGS = -X 'github.com/ekinertac/podlift/cmd/podlift/commands.Version=$(VERSION)' \
-          -X 'github.com/ekinertac/podlift/cmd/podlift/commands.Commit=$(COMMIT)' \
-          -X 'github.com/ekinertac/podlift/cmd/podlift/commands.Date=$(DATE)'
+.PHONY: help build test install clean release verify
 
-# Build the binary
-build:
-	@echo "Building podlift..."
+# Default target
+.DEFAULT_GOAL := help
+
+# Version from git or default
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT := $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+LDFLAGS := -X github.com/ekinertac/podlift/cmd/podlift/commands.Version=$(VERSION) -X github.com/ekinertac/podlift/cmd/podlift/commands.Commit=$(COMMIT)
+
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Available targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+build: ## Build the binary
+	@echo "Building podlift $(VERSION)..."
 	@go build -ldflags "$(LDFLAGS)" -o bin/podlift ./cmd/podlift
 	@echo "✓ Built bin/podlift"
 
-# Run locally
-run: build
-	@./bin/podlift
+install: build ## Install to /usr/local/bin
+	@echo "Installing to /usr/local/bin..."
+	@sudo cp bin/podlift /usr/local/bin/
+	@echo "✓ Installed"
 
-# Run tests
-test:
+test: ## Run all tests
 	@echo "Running tests..."
-	@go test -v ./...
+	@go test ./... -v
 
-# Run tests with coverage
-test-coverage:
+test-coverage: ## Run tests with coverage
 	@echo "Running tests with coverage..."
-	@go test -v -coverprofile=coverage.out ./...
+	@go test ./... -coverprofile=coverage.out
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo "✓ Coverage report: coverage.html"
 
-# Clean build artifacts
-clean:
+clean: ## Remove build artifacts
 	@echo "Cleaning..."
-	@rm -rf bin/
-	@rm -f coverage.out coverage.html
+	@rm -rf bin/ dist/ coverage.out coverage.html
 	@echo "✓ Cleaned"
 
-# Install to system
-install: build
-	@echo "Installing podlift..."
-	@sudo cp bin/podlift /usr/local/bin/
-	@echo "✓ Installed to /usr/local/bin/podlift"
+release: ## Build release binaries for all platforms
+	@./scripts/build-release.sh $(VERSION)
 
-# Format code
-fmt:
+verify: ## Run all verification checks
+	@./scripts/verify.sh
+
+lint: ## Run linter
+	@echo "Running linter..."
+	@golangci-lint run ./...
+
+fmt: ## Format code
 	@echo "Formatting code..."
 	@go fmt ./...
 	@echo "✓ Formatted"
 
-# Lint code
-lint:
-	@echo "Linting code..."
-	@golangci-lint run || echo "Install golangci-lint: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
-	@echo "✓ Linted"
+vet: ## Run go vet
+	@echo "Running go vet..."
+	@go vet ./...
+	@echo "✓ Vet passed"
 
-# Run all checks
-check: fmt lint test
+deps: ## Download dependencies
+	@echo "Downloading dependencies..."
+	@go mod download
+	@echo "✓ Dependencies downloaded"
+
+tidy: ## Tidy go.mod
+	@echo "Tidying go.mod..."
+	@go mod tidy
+	@echo "✓ Tidied"
+
+dev: ## Build and install for development
+	@$(MAKE) build
+	@$(MAKE) install
+	@echo "✓ Development build installed"
+
+all: fmt vet test build ## Run fmt, vet, test, and build
 	@echo "✓ All checks passed"
-
-# Show help
-help:
-	@echo "podlift Makefile"
-	@echo ""
-	@echo "Usage:"
-	@echo "  make build          Build the binary"
-	@echo "  make run             Build and run"
-	@echo "  make test            Run tests"
-	@echo "  make test-coverage   Run tests with coverage"
-	@echo "  make clean           Clean build artifacts"
-	@echo "  make install         Install to /usr/local/bin"
-	@echo "  make fmt             Format code"
-	@echo "  make lint            Lint code"
-	@echo "  make check           Run all checks"
-	@echo ""
-	@echo "Build variables:"
-	@echo "  VERSION=$(VERSION)"
-	@echo "  COMMIT=$(COMMIT)"
-	@echo "  DATE=$(DATE)"
-

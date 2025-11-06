@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build binaries
+        run: ./scripts/build-release.sh ${{ steps.version.outputs.VERSION }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          body: |
+            ## Installation
+
+            ### Quick Install
+            ```bash
+            curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
+            ```
+
+            ### Manual Download
+            Download the binary for your platform below and add it to your PATH.
+
+            ### Checksums
+            Verify your download with the `.sha256` files.
+
+            ## What's New
+            See the [changelog](CHANGELOG.md) for details.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
