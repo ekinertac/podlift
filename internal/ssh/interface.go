@@ -18,6 +18,7 @@ type SSHClient interface {
 	CopyFile(localPath, remotePath string) error
 	CopyFileWithProgress(localPath, remotePath string, progressFn func(int64, int64)) error
 	GetStateFile(serviceName string) (map[string]interface{}, error)
+	WriteFile(content, remotePath string) error
 }
 
 // Verify that Client implements SSHClient

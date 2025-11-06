@@ -203,6 +203,40 @@ func (c *Client) GetDiskSpace() (float64, error) {
 	return space, nil
 }
 
+// WriteFile writes content to a file on the remote server
+func (c *Client) WriteFile(content, remotePath string) error {
+	if !c.connected {
+		if err := c.Connect(); err != nil {
+			return err
+		}
+	}
+
+	// Use tee to write file with sudo
+	writeCmd := fmt.Sprintf("sudo tee %s > /dev/null", remotePath)
+	
+	session, err := c.client.NewSession()
+	if err != nil {
+		return fmt.Errorf("failed to create session: %w", err)
+	}
+	defer session.Close()
+
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdin: %w", err)
+	}
+
+	go func() {
+		defer stdin.Close()
+		stdin.Write([]byte(content))
+	}()
+
+	if err := session.Run(writeCmd); err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
+}
+
 // expandPath expands ~ in paths
 func expandPath(path string) string {
 	if len(path) > 0 && path[0] == '~' {

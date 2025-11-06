@@ -123,6 +123,10 @@ func (m *MockClient) GetStateFile(serviceName string) (map[string]interface{}, e
 	return map[string]interface{}{}, nil
 }
 
+func (m *MockClient) WriteFile(content, remotePath string) error {
+	return nil
+}
+
 // NewMockClient creates a mock client with default success responses
 func NewMockClient() *MockClient {
 	return &MockClient{

@@ -15,11 +15,12 @@ import (
 
 // DeployOptions contains deployment configuration
 type DeployOptions struct {
-	Config      *config.Config
-	SkipBuild   bool
-	SkipHealth  bool
-	Parallel    bool
-	DryRun      bool
+	Config       *config.Config
+	SkipBuild    bool
+	SkipHealth   bool
+	Parallel     bool
+	DryRun       bool
+	ZeroDowntime bool
 }
 
 // Deploy executes a deployment
@@ -88,8 +89,46 @@ func Deploy(opts DeployOptions) error {
 		fmt.Printf("Server %d/%d: %s\n", i+1, len(allServers), serverWithRole.Host)
 		fmt.Println()
 
-		if err := deployToServer(serverWithRole.Server, cfg, version, tarPath, opts); err != nil {
-			return fmt.Errorf("deployment failed on %s: %w", serverWithRole.Host, err)
+		// Create SSH client for this server
+		sshClient, err := ssh.NewClient(ssh.Config{
+			Host:    serverWithRole.Host,
+			Port:    serverWithRole.Port,
+			User:    serverWithRole.User,
+			KeyPath: serverWithRole.SSHKey,
+			Timeout: 30 * time.Second,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create SSH client: %w", err)
+		}
+		defer sshClient.Close()
+
+		if err := sshClient.Connect(); err != nil {
+			return fmt.Errorf("SSH connection failed: %w", err)
+		}
+
+		// Transfer image
+		if err := transferImage(sshClient, serverWithRole.Host, cfg, version, tarPath, opts); err != nil {
+			return err
+		}
+
+		// Choose deployment strategy
+		if opts.ZeroDowntime {
+			// Zero-downtime deployment with nginx
+			zdOpts := ZeroDowntimeDeployOptions{
+				Config:    cfg,
+				Version:   version,
+				ImagePath: tarPath,
+				SSHClient: sshClient,
+				Server:    serverWithRole.Server,
+			}
+			if err := ZeroDowntimeDeploy(zdOpts); err != nil {
+				return fmt.Errorf("deployment failed on %s: %w", serverWithRole.Host, err)
+			}
+		} else {
+			// Basic deployment (current method)
+			if err := deployToServer(serverWithRole.Server, cfg, version, tarPath, opts); err != nil {
+				return fmt.Errorf("deployment failed on %s: %w", serverWithRole.Host, err)
+			}
 		}
 
 		fmt.Println(ui.Success(fmt.Sprintf("Deployed to %s", serverWithRole.Host)))
