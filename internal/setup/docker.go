@@ -9,7 +9,7 @@ import (
 )
 
 // InstallDocker installs Docker on the server if not already installed
-func InstallDocker(client *ssh.Client) error {
+func InstallDocker(client ssh.SSHClient) error {
 	// Check if Docker is already installed
 	version, err := client.CheckDocker()
 	if err == nil {
@@ -44,7 +44,7 @@ sudo usermod -aG docker $USER`
 }
 
 // CheckDockerVersion checks if Docker version meets minimum requirements
-func CheckDockerVersion(client *ssh.Client) (string, error) {
+func CheckDockerVersion(client ssh.SSHClient) (string, error) {
 	version, err := client.CheckDocker()
 	if err != nil {
 		return "", err

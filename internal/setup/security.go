@@ -9,7 +9,7 @@ import (
 )
 
 // ApplySecurity applies basic security hardening
-func ApplySecurity(client *ssh.Client) error {
+func ApplySecurity(client ssh.SSHClient) error {
 	// 1. Disable password authentication for SSH
 	fmt.Println(ui.Info("Disabling SSH password authentication..."))
 	
@@ -44,7 +44,7 @@ systemctl reload sshd || service sshd reload`
 }
 
 // VerifySetup verifies that setup was successful
-func VerifySetup(client *ssh.Client) error {
+func VerifySetup(client ssh.SSHClient) error {
 	checks := []struct {
 		name string
 		fn   func() error

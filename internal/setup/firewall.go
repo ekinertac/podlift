@@ -9,7 +9,7 @@ import (
 )
 
 // ConfigureFirewall configures UFW firewall with necessary ports
-func ConfigureFirewall(client *ssh.Client) error {
+func ConfigureFirewall(client ssh.SSHClient) error {
 	// Check if UFW is installed
 	_, err := client.Execute("which ufw")
 	if err != nil {
@@ -55,7 +55,7 @@ func ConfigureFirewall(client *ssh.Client) error {
 }
 
 // CheckFirewall checks if firewall is configured
-func CheckFirewall(client *ssh.Client) (bool, error) {
+func CheckFirewall(client ssh.SSHClient) (bool, error) {
 	output, err := client.Execute("ufw status")
 	if err != nil {
 		return false, nil // UFW not installed
