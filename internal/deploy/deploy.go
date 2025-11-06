@@ -148,6 +148,13 @@ func Deploy(opts DeployOptions) error {
 			return err
 		}
 
+		// Deploy dependencies first (postgres, redis, etc.)
+		if !opts.DryRun {
+			if err := DeployDependencies(cfg, sshClient, version); err != nil {
+				return fmt.Errorf("dependency deployment failed: %w", err)
+			}
+		}
+
 		// Choose deployment strategy
 		if opts.ZeroDowntime {
 			// Zero-downtime deployment with nginx
