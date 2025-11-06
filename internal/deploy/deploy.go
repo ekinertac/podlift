@@ -9,6 +9,7 @@ import (
 	"github.com/ekinertac/podlift/internal/config"
 	"github.com/ekinertac/podlift/internal/docker"
 	"github.com/ekinertac/podlift/internal/git"
+	"github.com/ekinertac/podlift/internal/registry"
 	"github.com/ekinertac/podlift/internal/ssh"
 	"github.com/ekinertac/podlift/internal/ui"
 )
@@ -36,10 +37,17 @@ func Deploy(opts DeployOptions) error {
 	fmt.Println(ui.Title(fmt.Sprintf("Deploying %s:%s", cfg.Service, version)))
 	fmt.Println()
 
+	// Determine transfer method
+	useRegistry := registry.IsConfigured(cfg)
+	transferMethod := "SCP"
+	if useRegistry {
+		transferMethod = "Registry"
+	}
+
 	steps := ui.NewStepList([]string{
 		"Build image",
-		"Transfer to server",
-		"Load image",
+		fmt.Sprintf("Transfer (%s)", transferMethod),
+		"Load/Pull image",
 		"Start containers",
 		"Health check",
 	})
@@ -60,27 +68,56 @@ func Deploy(opts DeployOptions) error {
 	fmt.Println(ui.Success("Build complete"))
 	fmt.Println()
 
-	// Step 2: Save image to tar
-	tempDir := filepath.Join(os.TempDir(), "podlift")
-	os.MkdirAll(tempDir, 0755)
-	tarPath := filepath.Join(tempDir, fmt.Sprintf("%s-%s.tar", cfg.Image, version))
+	// Step 2: Push to registry or save to tar
+	var tarPath string
+	
+	if useRegistry {
+		// Push to registry
+		steps.Start(1, "Pushing to registry...")
+		fmt.Println(steps.RenderCurrent())
 
-	steps.Start(1, "Saving image to tar...")
-	fmt.Println(steps.RenderCurrent())
+		if !opts.DryRun {
+			regClient := registry.NewClient(cfg.Registry)
+			
+			// Login
+			if err := regClient.Login(); err != nil {
+				steps.Fail(1, err.Error())
+				return err
+			}
 
-	if !opts.DryRun {
-		if err := docker.SaveImage(cfg.Image, version, tarPath); err != nil {
-			steps.Fail(1, err.Error())
-			return err
+			// Push
+			if err := regClient.Push(cfg.Image, version); err != nil {
+				steps.Fail(1, err.Error())
+				return err
+			}
 		}
-		defer os.Remove(tarPath) // Cleanup
-	}
 
-	// Get image size
-	size, _ := docker.GetImageSize(tarPath)
-	steps.Complete(1, fmt.Sprintf("Saved (%.1f MB)", size))
-	fmt.Println(ui.Success(fmt.Sprintf("Image saved: %.1fMB", size)))
-	fmt.Println()
+		steps.Complete(1, "Pushed to registry")
+		fmt.Println(ui.Success("Image pushed"))
+		fmt.Println()
+	} else {
+		// Save to tar for SCP
+		tempDir := filepath.Join(os.TempDir(), "podlift")
+		os.MkdirAll(tempDir, 0755)
+		tarPath = filepath.Join(tempDir, fmt.Sprintf("%s-%s.tar", cfg.Image, version))
+
+		steps.Start(1, "Saving image to tar...")
+		fmt.Println(steps.RenderCurrent())
+
+		if !opts.DryRun {
+			if err := docker.SaveImage(cfg.Image, version, tarPath); err != nil {
+				steps.Fail(1, err.Error())
+				return err
+			}
+			defer os.Remove(tarPath) // Cleanup
+		}
+
+		// Get image size
+		size, _ := docker.GetImageSize(tarPath)
+		steps.Complete(1, fmt.Sprintf("Saved (%.1f MB)", size))
+		fmt.Println(ui.Success(fmt.Sprintf("Image saved: %.1fMB", size)))
+		fmt.Println()
+	}
 
 	// Deploy to each server
 	allServers := cfg.GetAllServers()

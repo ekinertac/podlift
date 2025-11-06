@@ -5,13 +5,39 @@ import (
 
 	"github.com/ekinertac/podlift/internal/config"
 	"github.com/ekinertac/podlift/internal/docker"
+	"github.com/ekinertac/podlift/internal/registry"
 	"github.com/ekinertac/podlift/internal/ssh"
 	"github.com/ekinertac/podlift/internal/ui"
 )
 
-// transferImage transfers the Docker image to the server
+// transferImage transfers the Docker image to the server (via registry or SCP)
 func transferImage(client ssh.SSHClient, host string, cfg *config.Config, version, tarPath string, opts DeployOptions) error {
-	fmt.Println(ui.Info("Transferring image..."))
+	useRegistry := registry.IsConfigured(cfg)
+
+	if useRegistry {
+		// Use registry
+		fmt.Println(ui.Info("Using registry for image transfer"))
+		
+		regClient := registry.NewClient(cfg.Registry)
+		
+		// Login on server
+		if !opts.DryRun {
+			if err := regClient.LoginRemote(client); err != nil {
+				return err
+			}
+
+			// Pull image
+			if err := regClient.Pull(client, cfg.Image, version); err != nil {
+				return err
+			}
+		}
+
+		fmt.Println(ui.Success("Image pulled from registry"))
+		return nil
+	}
+
+	// Use SCP
+	fmt.Println(ui.Info("Using SCP for image transfer"))
 	remoteTarPath := fmt.Sprintf("/tmp/%s-%s.tar", cfg.Image, version)
 
 	if !opts.DryRun {
