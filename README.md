@@ -41,16 +41,51 @@ cd myapp/
 podlift init
 ```
 
-Edit `podlift.yml` to add your server:
+Edit `podlift.yml` to add your server and configuration. For a production-ready example, see `testdata/standard.yml`:
+
 ```yaml
 service: myapp
+domain: myapp.com
 image: myapp
 
 servers:
   - host: 192.168.1.10
     user: root
-    ssh_key: ~/.ssh/id_rsa
+
+registry:
+  server: ghcr.io
+  username: ${REGISTRY_USER}
+  password: ${REGISTRY_PASSWORD}
+
+dependencies:
+  postgres:
+    image: postgres:16
+    port: 5432
+    volume: postgres_data:/var/lib/postgresql/data
+    env:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+services:
+  web:
+    port: 8000
+    replicas: 2
+    healthcheck:
+      path: /health
+    env:
+      SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgres://postgres:${DB_PASSWORD}@primary:5432/myapp
+
+proxy:
+  enabled: true
+  ssl: letsencrypt
+  ssl_email: admin@myapp.com
+
+hooks:
+  after_deploy:
+    - docker exec myapp-web-1 python manage.py migrate
 ```
+
+Create a `.env` file for secrets (see `testdata/.env.example`).
 
 Deploy:
 ```bash

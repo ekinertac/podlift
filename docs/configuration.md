@@ -224,16 +224,25 @@ dependencies:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 ```
 
-Dependencies run on the server labeled `primary` (or first web server if no label).
+By default, dependencies run on the server labeled `primary` (or first server if no label). You can deploy dependencies to specific servers using `host`, `role`, or `labels`.
 
 #### Dependency fields
 
 - `image` - **Required**. Docker image
+- `host` - **Optional**. Deploy to specific server by IP/hostname
+- `role` - **Optional**. Deploy to first server in specified role (e.g., `db`, `cache`)
+- `labels` - **Optional**. Deploy to server matching these labels
 - `port` - Port to expose (default: container default)
 - `volume` - Persistent volume mapping
 - `env` - Environment variables (supports `${VAR}` syntax)
 - `command` - Override container command
 - `options` - Additional Docker run options
+
+**Placement priority:** If multiple placement options are specified, they're checked in this order:
+1. `host` - Exact host match
+2. `role` - First server in role
+3. `labels` - Server with matching label
+4. Default - Primary server
 
 #### Common dependencies
 
@@ -476,27 +485,47 @@ ENVIRONMENT=staging SERVER_HOST=192.168.2.20 podlift deploy
 
 ## Advanced Patterns
 
-### Shared Dependencies
+### Separated Infrastructure
 
-Dependencies run once on the primary server. All app containers connect to them:
+Dependencies can be deployed to separate servers for better separation of concerns:
 
 ```yaml
 servers:
   web:
     - host: 192.168.1.10
-      labels: [primary]  # postgres runs here
     - host: 192.168.1.11
+  
+  db:
+    - host: 192.168.1.20
+      labels: [database]
+  
+  cache:
+    - host: 192.168.1.30
+      labels: [cache]
 
 dependencies:
   postgres:
     image: postgres:16
+    role: db  # On 192.168.1.20
+    port: 5432
+  
+  redis:
+    image: redis:7
+    labels: [cache]  # On 192.168.1.30
+    port: 6379
 
 services:
   web:
     env:
-      # 'primary' resolves to 192.168.1.10
-      DATABASE_URL: postgres://postgres:${DB_PASSWORD}@primary:5432/myapp
+      # Connect to dependencies by their server IPs
+      DATABASE_URL: postgres://postgres:${DB_PASSWORD}@192.168.1.20:5432/myapp
+      REDIS_URL: redis://192.168.1.30:6379
 ```
+
+This allows complete separation:
+- Web servers: 192.168.1.10, 192.168.1.11
+- Database: 192.168.1.20
+- Cache: 192.168.1.30
 
 ### Multiple Replicas Per Server
 

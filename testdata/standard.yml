@@ -1,0 +1,50 @@
+service: myapp
+domain: myapp.com
+image: myapp
+
+# Production server
+servers:
+  - host: 192.168.1.10
+    user: root
+    ssh_key: ~/.ssh/id_rsa
+
+# Docker registry (GitHub Container Registry)
+registry:
+  server: ghcr.io
+  username: ${REGISTRY_USER}
+  password: ${REGISTRY_PASSWORD}
+
+# PostgreSQL database
+dependencies:
+  postgres:
+    image: postgres:16
+    port: 5432
+    volume: postgres_data:/var/lib/postgresql/data
+    env:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: myapp
+
+# Web application
+services:
+  web:
+    port: 8000
+    replicas: 2
+    healthcheck:
+      path: /health
+      expect: [200]
+    env:
+      SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgres://postgres:${DB_PASSWORD}@primary:5432/myapp
+      DEBUG: "false"
+
+# SSL with Let's Encrypt
+proxy:
+  enabled: true
+  ssl: letsencrypt
+  ssl_email: admin@myapp.com
+
+# Run migrations after deploy
+hooks:
+  after_deploy:
+    - docker exec myapp-web-1 python manage.py migrate
+

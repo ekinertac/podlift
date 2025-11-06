@@ -30,7 +30,105 @@ Created .env.example
 Next steps:
   1. Edit podlift.yml and add your server
   2. Copy .env.example to .env and set secrets
-  3. Run: podlift validate
+  3. Run: podlift setup (prepare fresh servers)
+  4. Run: podlift validate
+```
+
+## podlift setup
+
+Prepare fresh servers for deployment.
+
+```bash
+podlift setup
+```
+
+Installs and configures everything needed on your servers:
+- Docker installation
+- Firewall configuration (ports 22, 80, 443)
+- Basic security hardening
+- Verification
+
+### Flags
+
+- `--no-firewall` - Skip firewall configuration
+- `--no-security` - Skip security hardening
+- `--create-user <name>` - Create deploy user instead of using root
+
+### What It Does
+
+```bash
+$ podlift setup
+
+Setting up servers from podlift.yml...
+
+Server: 192.168.1.10
+  [1/4] Installing Docker...
+    Downloading Docker installation script...
+    Installing Docker 24.0.5...
+    ✓ Docker installed
+
+  [2/4] Configuring firewall...
+    Opening port 22 (SSH)...
+    Opening port 80 (HTTP)...
+    Opening port 443 (HTTPS)...
+    Enabling firewall...
+    ✓ Firewall configured
+
+  [3/4] Applying security settings...
+    Disabling password authentication...
+    Installing fail2ban...
+    ✓ Security configured
+
+  [4/4] Verification...
+    ✓ Docker running
+    ✓ Ports open
+    ✓ SSH access working
+
+✓ Server setup complete!
+
+Next step: podlift deploy
+```
+
+### Idempotent
+
+Safe to run multiple times:
+
+```bash
+$ podlift setup
+
+Server: 192.168.1.10
+  [1/4] Installing Docker...
+    ✓ Docker 24.0.5 already installed
+
+  [2/4] Configuring firewall...
+    ✓ Firewall already configured
+
+  # ... all checks pass ...
+
+✓ Server already configured correctly!
+```
+
+### Error Handling
+
+Clear errors if setup fails:
+
+```bash
+$ podlift setup
+
+Server: 192.168.1.10
+  [1/4] Installing Docker...
+    ✗ Installation failed
+
+ERROR: Docker installation failed
+
+apt-get command not found. 
+
+Supported operating systems:
+  - Ubuntu 20.04+
+  - Debian 11+
+  - CentOS 8+
+
+Manual installation: https://docs.docker.com/engine/install/
 ```
 
 ## podlift validate
@@ -49,6 +147,7 @@ Checks:
 - Disk space
 - Git repository state
 - Environment variables
+- Service name conflicts (detects if different app uses same name)
 
 Output:
 ```
@@ -66,7 +165,9 @@ Validating configuration...
 Ready to deploy!
 ```
 
-Error example:
+Error examples:
+
+**Port conflict:**
 ```
 Validating configuration...
 
@@ -77,6 +178,29 @@ Validating configuration...
 Port 5432 is required for postgres but already in use.
 
 Check what's using it: ssh root@192.168.1.10 'lsof -i :5432'
+```
+
+**Service name conflict:**
+```
+Validating configuration...
+
+✓ Configuration valid
+✓ SSH connection to 192.168.1.10
+✓ Docker 24.0.5 installed
+⚠ Service 'myapp' already deployed on 192.168.1.10
+
+Existing deployment:
+  Version: x9y8z7w
+  Deployed: 2 hours ago
+  Containers: 2
+
+If this is the same application:
+  This is normal - deploying will update the existing deployment
+
+If this is a DIFFERENT application:
+  Change the service name in podlift.yml to avoid conflicts
+
+Service names must be unique per server.
 ```
 
 ## podlift deploy
