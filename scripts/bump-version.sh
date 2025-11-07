@@ -64,27 +64,17 @@ fi
 # Check if we're on main branch
 CURRENT_BRANCH=$(git branch --show-current)
 if [[ "$CURRENT_BRANCH" != "main" ]]; then
-    echo -e "${YELLOW}Warning: You're not on the main branch (current: $CURRENT_BRANCH)${NC}"
-    read -p "Continue anyway? [y/N] " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 1
-    fi
-fi
-
-# Confirm bump
-echo -e "${YELLOW}This will:${NC}"
-echo "  1. Create git tag: ${NEW_VERSION}"
-echo "  2. Push tag to GitHub"
-echo "  3. Trigger GitHub Actions release build"
-echo ""
-read -p "Continue? [y/N] " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Aborted."
+    echo -e "${RED}Error: Not on main branch (current: $CURRENT_BRANCH)${NC}"
+    echo "Switch to main branch before bumping version."
     exit 1
 fi
+
+# Show what will happen
+echo -e "${YELLOW}Releasing:${NC}"
+echo "  • Create git tag: ${NEW_VERSION}"
+echo "  • Push tag to GitHub"
+echo "  • Trigger GitHub Actions release build"
+echo ""
 
 # Create annotated tag
 echo ""
