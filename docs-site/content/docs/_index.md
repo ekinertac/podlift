@@ -18,6 +18,7 @@ New to podlift? Start here:
 
 ## Reference
 
+- [Configuration Examples](examples) - Real-world use cases
 - [Commands Reference](commands) - All available commands and options
 - [How It Works](how-it-works) - Technical deep dive
 - [Troubleshooting](troubleshooting) - Common issues and solutions
