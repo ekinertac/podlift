@@ -1,8 +1,3 @@
----
-title: Configuration
-weight: 30
----
-
 # Configuration Reference
 
 Complete reference for `podlift.yml` configuration file.
@@ -377,7 +372,7 @@ Hooks run on the primary server via SSH.
 
 ## Environment Variables
 
-Environment variables are read from `.env` file in the project root.
+Environment variables are read from `.env` file **in the same directory as `podlift.yml`**.
 
 Example `.env`:
 ```bash
@@ -387,7 +382,19 @@ SECRET_KEY=django-secret-key
 DB_PASSWORD=postgres-password
 ```
 
-**Important**: Never commit `.env` to git. Add to `.gitignore`.
+**File location:**
+```
+myapp/
+├── podlift.yml
+├── .env          ← Must be here (same directory as podlift.yml)
+├── Dockerfile
+└── src/
+```
+
+**Important**: 
+- Never commit `.env` to git. Add to `.gitignore`.
+- The `.env` file must be in the same directory as `podlift.yml`
+- podlift will NOT search parent directories
 
 Reference in `podlift.yml`:
 ```yaml

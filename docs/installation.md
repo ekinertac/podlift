@@ -279,6 +279,8 @@ Minimal working config. See [Configuration Reference](configuration.md) for all 
 
 ### Set Up Environment Variables
 
+Create `.env` in the same directory as `podlift.yml`:
+
 ```bash
 # Copy example
 cp .env.example .env
@@ -293,7 +295,10 @@ SECRET_KEY=your-django-secret-key
 DB_PASSWORD=secure-postgres-password
 ```
 
-**Important**: Add `.env` to `.gitignore`:
+**Important**: 
+- The `.env` file must be in the same directory as `podlift.yml`
+- Add `.env` to `.gitignore`:
+
 ```bash
 echo ".env" >> .gitignore
 git add .gitignore

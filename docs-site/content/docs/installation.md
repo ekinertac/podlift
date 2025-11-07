@@ -1,8 +1,3 @@
----
-title: Installation
-weight: 10
----
-
 # Installation
 
 Complete guide to installing and setting up podlift.
@@ -29,7 +24,7 @@ Choose the method that works best for you:
 
 | Method | Best For | Updates |
 |--------|----------|---------|
-| Install Script (Recommended) | Quick setup, any platform | Re-run script |
+| Install Script | Quick setup, any platform | Re-run script |
 | Download Binary | Offline installs, specific versions | Manual download |
 | Go Install | Go developers | `go install ...@latest` |
 | Build from Source | Contributors, custom builds | `git pull && go build` |
@@ -85,7 +80,7 @@ For development or custom builds:
 ```bash
 git clone https://github.com/ekinertac/podlift.git
 cd podlift
-go build -o podlift ./cmd/podlift
+go build -o podlift .
 sudo mv podlift /usr/local/bin/
 ```
 
@@ -97,9 +92,9 @@ podlift version
 
 Should output:
 ```
-podlift v1.0.0
-Go version: go1.23.3
-OS/Arch: darwin/arm64
+podlift v0.1.0
+Go version: go1.21.0
+OS/Arch: linux/amd64
 ```
 
 ## Server Setup
@@ -271,10 +266,8 @@ This creates:
 Edit `podlift.yml`:
 
 ```yaml
-service:
-  name: myapp
-  image: myapp
-  port: 8000
+service: myapp
+image: myapp
 
 servers:
   - host: 192.168.1.10
@@ -282,9 +275,11 @@ servers:
     ssh_key: ~/.ssh/id_ed25519
 ```
 
-Minimal working config. See [Configuration Reference](../configuration) for all options.
+Minimal working config. See [Configuration Reference](configuration.md) for all options.
 
 ### Set Up Environment Variables
+
+Create `.env` in the same directory as `podlift.yml`:
 
 ```bash
 # Copy example
@@ -300,7 +295,10 @@ SECRET_KEY=your-django-secret-key
 DB_PASSWORD=secure-postgres-password
 ```
 
-**Important**: Add `.env` to `.gitignore`:
+**Important**: 
+- The `.env` file must be in the same directory as `podlift.yml`
+- Add `.env` to `.gitignore`:
+
 ```bash
 echo ".env" >> .gitignore
 git add .gitignore
@@ -325,7 +323,7 @@ Should output:
 Ready to deploy!
 ```
 
-If validation fails, see [Troubleshooting](../troubleshooting).
+If validation fails, see [Troubleshooting](troubleshooting.md).
 
 ## First Deployment
 
@@ -400,13 +398,11 @@ curl http://192.168.1.10
 
 Edit `podlift.yml`:
 ```yaml
-service:
-  name: myapp
-  domain: myapp.com
+domain: myapp.com
 
-ssl:
-  enabled: true
-  email: admin@myapp.com
+proxy:
+  ssl: letsencrypt
+  ssl_email: admin@myapp.com
 ```
 
 ### Set Up SSL
@@ -476,12 +472,123 @@ podlift logs web --follow
 podlift exec web python manage.py migrate
 ```
 
+## Upgrading podlift
+
+### Check Current Version
+
+```bash
+podlift version
+```
+
+### Upgrade to Latest
+
+**Go install:**
+```bash
+go install github.com/ekinertac/podlift@latest
+```
+
+**Install script:**
+```bash
+curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
+```
+
+**Manual:** Download latest release from GitHub.
+
+### Verify Upgrade
+
+```bash
+podlift version
+```
+
+## Uninstall
+
+Remove binary:
+```bash
+sudo rm /usr/local/bin/podlift
+```
+
+Remove configuration (optional):
+```bash
+rm podlift.yml
+rm .env
+```
+
+Server cleanup (if no longer using):
+```bash
+ssh root@192.168.1.10
+
+# Stop all containers
+docker stop $(docker ps -q)
+
+# Remove containers
+docker rm $(docker ps -aq)
+
+# Remove images
+docker rmi $(docker images -q)
+
+# Remove nginx config
+rm /etc/nginx/sites-available/myapp
+rm /etc/nginx/sites-enabled/myapp
+systemctl reload nginx
+```
+
+## Cloud Provider Setup
+
+### DigitalOcean
+
+Create droplet:
+```bash
+# Via web UI or API
+doctl compute droplet create myapp \
+  --image ubuntu-22-04-x64 \
+  --size s-1vcpu-1gb \
+  --region nyc1
+```
+
+Get IP and use in `podlift.yml`.
+
+### AWS EC2
+
+Launch instance:
+```bash
+# Via AWS Console or CLI
+aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --instance-type t3.micro \
+  --key-name your-key
+```
+
+Update security group to allow ports 22, 80, 443.
+
+### Hetzner
+
+Create server:
+```bash
+# Via Hetzner Cloud Console
+hcloud server create \
+  --name myapp \
+  --type cx11 \
+  --image ubuntu-22.04
+```
+
+Get IP and configure podlift.
+
+### Linode
+
+Launch instance via Linode Manager or API.
+
+All cloud providers work the same way:
+1. Create Ubuntu instance
+2. Get public IP
+3. Configure SSH access
+4. Use IP in `podlift.yml`
+
 ## Getting Help
 
-- [Commands Reference](../commands)
-- [Configuration Reference](../configuration)
-- [Troubleshooting](../troubleshooting)
-- [How It Works](../how-it-works)
+- [Commands Reference](commands.md)
+- [Configuration Reference](configuration.md)
+- [Troubleshooting](troubleshooting.md)
+- [How It Works](how-it-works.md)
 
 Still stuck? [Open an issue](https://github.com/ekinertac/podlift/issues).
 

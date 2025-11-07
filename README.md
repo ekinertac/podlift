@@ -36,7 +36,7 @@ cd myapp/
 podlift init
 ```
 
-Edit `podlift.yml` to add your server and configuration. For a production-ready example, see `testdata/standard.yml`:
+Edit `podlift.yml` to add your server and configuration:
 
 ```yaml
 service: myapp
@@ -80,7 +80,12 @@ hooks:
     - docker exec myapp-web-1 python manage.py migrate
 ```
 
-Create a `.env` file for secrets (see `testdata/.env.example`).
+Create a `.env` file **in the same directory as `podlift.yml`**:
+
+```bash
+cp .env.example .env
+# Edit .env with your secrets
+```
 
 Deploy:
 ```bash
