@@ -27,7 +27,7 @@ curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | 
 brew install ekinertac/tap/podlift
 
 # Or with Go
-go install github.com/ekinertac/podlift/cmd/podlift@latest
+go install github.com/ekinertac/podlift@latest
 
 # Or download binary from releases
 # https://github.com/ekinertac/podlift/releases

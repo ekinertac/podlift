@@ -68,7 +68,7 @@ sudo mv podlift-darwin-amd64 /usr/local/bin/podlift
 If you have Go 1.21+ installed, use Go's package manager:
 
 ```bash
-go install github.com/ekinertac/podlift/cmd/podlift@latest
+go install github.com/ekinertac/podlift@latest
 ```
 
 This compiles and installs to `$GOPATH/bin` (usually `~/go/bin`).
