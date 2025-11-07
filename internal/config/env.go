@@ -105,8 +105,23 @@ func FindEnvFile(configPath string) string {
 
 // SubstituteConfigEnvVars substitutes environment variables in config
 func (c *Config) SubstituteConfigEnvVars() error {
-	// Load .env file if it exists (same directory as podlift.yml)
-	envPath := FindEnvFile(c.configPath)
+	var envPath string
+	
+	if c.EnvFile != "" {
+		// User specified custom env file path
+		envPath = ExpandPath(c.EnvFile)
+		// Check if file exists
+		if _, err := os.Stat(envPath); err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("env_file not found: %s", envPath)
+			}
+			return fmt.Errorf("failed to access env_file: %w", err)
+		}
+	} else {
+		// Default: look in same directory as podlift.yml
+		envPath = FindEnvFile(c.configPath)
+	}
+	
 	if envPath != "" {
 		if err := LoadEnv(envPath); err != nil {
 			return fmt.Errorf("failed to load .env file: %w", err)

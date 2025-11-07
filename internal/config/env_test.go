@@ -206,3 +206,54 @@ func TestFindEnvFile(t *testing.T) {
 	}
 }
 
+func TestCustomEnvFile(t *testing.T) {
+	// Create temp directory with custom env file
+	tmpdir, err := os.MkdirTemp("", "podlift-env-test-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// Create custom env file
+	customEnvPath := filepath.Join(tmpdir, "custom.env")
+	os.WriteFile(customEnvPath, []byte("CUSTOM_VAR=custom_value\n"), 0644)
+
+	// Create config
+	config := &Config{
+		EnvFile:    customEnvPath,
+		configPath: filepath.Join(tmpdir, "podlift.yml"),
+	}
+
+	// Should load custom env file
+	if err := config.SubstituteConfigEnvVars(); err != nil {
+		t.Errorf("SubstituteConfigEnvVars() with custom env_file failed: %v", err)
+	}
+
+	// Check variable was loaded
+	if os.Getenv("CUSTOM_VAR") != "custom_value" {
+		t.Errorf("Custom env variable not loaded, got: %v", os.Getenv("CUSTOM_VAR"))
+	}
+	
+	// Clean up
+	os.Unsetenv("CUSTOM_VAR")
+	
+	// Test with non-existent custom file
+	config.EnvFile = filepath.Join(tmpdir, "nonexistent.env")
+	if err := config.SubstituteConfigEnvVars(); err == nil {
+		t.Error("SubstituteConfigEnvVars() should error with non-existent env_file")
+	}
+	
+	// Test with tilde expansion
+	home, _ := os.UserHomeDir()
+	config.EnvFile = "~/custom.env"
+	// Create file in home directory
+	homeEnvPath := filepath.Join(home, "custom.env")
+	os.WriteFile(homeEnvPath, []byte("HOME_VAR=home_value\n"), 0644)
+	defer os.Remove(homeEnvPath)
+	
+	if err := config.SubstituteConfigEnvVars(); err != nil {
+		t.Errorf("SubstituteConfigEnvVars() with tilde path failed: %v", err)
+	}
+	os.Unsetenv("HOME_VAR")
+}
+

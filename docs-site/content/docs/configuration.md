@@ -100,6 +100,21 @@ hooks:
 
 ## Configuration Fields
 
+### env_file
+
+**Optional**. Path to custom environment file.
+
+```yaml
+env_file: /path/to/custom.env
+```
+
+By default, podlift looks for `.env` in the same directory as `podlift.yml`. Use this field to specify a different location.
+
+Supports:
+- Absolute paths: `/etc/myapp/.env`
+- Relative paths: `../shared/.env.production`
+- Home directory: `~/.config/myapp/.env`
+
 ### service
 
 **Required**. The name of your service. Used as container name prefix.
@@ -372,7 +387,7 @@ Hooks run on the primary server via SSH.
 
 ## Environment Variables
 
-Environment variables are read from `.env` file **in the same directory as `podlift.yml`**.
+Environment variables are read from `.env` file **in the same directory as `podlift.yml`** (by default).
 
 Example `.env`:
 ```bash
@@ -382,19 +397,35 @@ SECRET_KEY=django-secret-key
 DB_PASSWORD=postgres-password
 ```
 
-**File location:**
+**Default file location:**
 ```
 myapp/
 ├── podlift.yml
-├── .env          ← Must be here (same directory as podlift.yml)
+├── .env          ← Default location (same directory as podlift.yml)
 ├── Dockerfile
 └── src/
 ```
 
+**Custom env file path:**
+
+You can specify a custom path in `podlift.yml`:
+
+```yaml
+# Use a custom env file
+env_file: /path/to/custom.env
+
+# Or use relative path
+env_file: ../shared/.env.production
+
+# Or use tilde for home directory
+env_file: ~/.config/myapp/.env
+```
+
 **Important**: 
 - Never commit `.env` to git. Add to `.gitignore`.
-- The `.env` file must be in the same directory as `podlift.yml`
-- podlift will NOT search parent directories
+- By default, `.env` is in the same directory as `podlift.yml`
+- Use `env_file` to specify a custom location
+- Absolute paths, relative paths, and `~` expansion are supported
 
 Reference in `podlift.yml`:
 ```yaml
