@@ -1,6 +1,6 @@
 # podlift Makefile
 
-.PHONY: help build test install clean release verify bump-patch bump-minor bump-major
+.PHONY: help build test install clean release verify bump-patch bump-minor bump-major bump-alpha bump-beta
 
 # Default target
 .DEFAULT_GOAL := help
@@ -87,3 +87,9 @@ bump-minor: ## Bump minor version (1.0.0 -> 1.1.0) and create release
 
 bump-major: ## Bump major version (1.0.0 -> 2.0.0) and create release
 	@./scripts/bump-version.sh major
+
+bump-alpha: ## Create alpha pre-release (1.0.2 -> 1.0.3-alpha.1)
+	@./scripts/bump-version.sh alpha
+
+bump-beta: ## Create beta pre-release (1.0.2 -> 1.0.3-beta.1)
+	@./scripts/bump-version.sh beta
