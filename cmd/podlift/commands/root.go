@@ -2,17 +2,20 @@ package commands
 
 import (
 	"fmt"
+	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
 var (
-	// Version is set at build time
-	Version = "dev"
-	Commit  = "unknown"
-	Date    = "unknown"
+	// Version is set at build time via ldflags
+	// If not set, it will be detected from git
+	Version = ""
+	Commit  = ""
+	Date    = ""
 )
 
 var rootCmd = &cobra.Command{
@@ -22,6 +25,7 @@ var rootCmd = &cobra.Command{
 No black boxes, no magic, no broken promises.`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	Version:       getVersion(),
 }
 
 // Execute runs the root command
@@ -30,41 +34,55 @@ func Execute() error {
 }
 
 func init() {
+	// Add version subcommand for 'podlift version'
 	rootCmd.AddCommand(versionCmd)
+	
+	// Customize --version flag output
+	rootCmd.SetVersionTemplate(getVersionOutput())
 }
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show podlift version",
 	Run: func(cmd *cobra.Command, args []string) {
-		style := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("39")) // Blue
-
-		fmt.Println(style.Render("podlift") + " " + Version)
-		fmt.Printf("Go version: %s\n", goVersion())
-		fmt.Printf("OS/Arch: %s/%s\n", osName(), osArch())
-		if Commit != "unknown" {
-			fmt.Printf("Commit: %s\n", Commit)
-		}
-		if Date != "unknown" {
-			fmt.Printf("Built: %s\n", Date)
-		}
+		fmt.Print(getVersionOutput())
 	},
 }
 
-
-// Helper functions (will be moved to proper package later)
-func goVersion() string {
-	// TODO: Get actual Go version at runtime
-	return "go1.21+"
+// getVersion returns the version string, detecting from git if not set at build time
+func getVersion() string {
+	if Version != "" {
+		return Version
+	}
+	
+	// Try to get version from git tag
+	cmd := exec.Command("git", "describe", "--tags", "--always", "--dirty")
+	output, err := cmd.Output()
+	if err == nil {
+		return strings.TrimSpace(string(output))
+	}
+	
+	return "dev"
 }
 
-func osName() string {
-	return runtime.GOOS
-}
+// getVersionOutput returns formatted version information
+func getVersionOutput() string {
+	style := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("39")) // Blue
 
-func osArch() string {
-	return runtime.GOARCH
+	version := getVersion()
+	output := style.Render("podlift") + " " + version + "\n"
+	output += fmt.Sprintf("Go version: %s\n", runtime.Version())
+	output += fmt.Sprintf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
+	
+	if Commit != "" && Commit != "unknown" {
+		output += fmt.Sprintf("Commit: %s\n", Commit)
+	}
+	if Date != "" && Date != "unknown" {
+		output += fmt.Sprintf("Built: %s\n", Date)
+	}
+	
+	return output
 }
 
