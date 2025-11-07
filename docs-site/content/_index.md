@@ -82,15 +82,15 @@ hooks:
 
 ## Why podlift?
 
-**Simple** - One configuration file, intuitive commands
-**Fast** - Zero-downtime deployments in seconds
-**Reliable** - Automatic health checks and rollbacks
-**Production-Ready** - SSL, load balancing, dependencies
+**Simple** - One configuration file, intuitive commands  
+**Fast** - Zero-downtime deployments in seconds  
+**Reliable** - Automatic health checks and rollbacks  
+**Production-Ready** - SSL, load balancing, dependencies  
 **Non-Interactive** - Perfect for CI/CD pipelines
 
 ## Learn More
 
-{{< columns >}}
+{{% columns %}}
 
 ### Getting Started
 - [Installation](docs/installation)
@@ -111,7 +111,7 @@ hooks:
 - [GitHub Issues](https://github.com/ekinertac/podlift/issues)
 - [Releases](https://github.com/ekinertac/podlift/releases)
 
-{{< /columns >}}
+{{% /columns %}}
 
 ## Quick Example
 
