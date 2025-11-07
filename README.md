@@ -224,13 +224,16 @@ proxy:
 
 ## Documentation
 
-- [Installation](docs/installation.md) - Detailed setup guide
-- [Commands](docs/commands.md) - Complete CLI reference
-- [Configuration](docs/configuration.md) - All configuration options
-- [Deployment Guide](docs/deployment-guide.md) - Strategies, rollbacks, multi-server
-- [Troubleshooting](docs/troubleshooting.md) - Common errors and solutions
-- [How It Works](docs/how-it-works.md) - Architecture and internals
-- [Migration](docs/migration.md) - Moving from Kamal, Ansible, or manual deploys
+**Full documentation site**: https://ekinertac.github.io/podlift/
+
+Quick links:
+- [Installation](https://ekinertac.github.io/podlift/docs/installation/) - Detailed setup guide
+- [Commands](https://ekinertac.github.io/podlift/docs/commands/) - Complete CLI reference
+- [Configuration](https://ekinertac.github.io/podlift/docs/configuration/) - All configuration options
+- [Deployment Guide](https://ekinertac.github.io/podlift/docs/deployment-guide/) - Strategies, rollbacks, multi-server
+- [Troubleshooting](https://ekinertac.github.io/podlift/docs/troubleshooting/) - Common errors and solutions
+- [How It Works](https://ekinertac.github.io/podlift/docs/how-it-works/) - Architecture and internals
+- [Migration](https://ekinertac.github.io/podlift/docs/migration/) - Moving from Kamal, Ansible, or manual deploys
 
 ## Principles
 

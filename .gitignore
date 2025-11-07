@@ -53,3 +53,8 @@ build/
 
 # Personal Notes
 /docs/notes/
+
+# Hugo
+docs-site/public/
+docs-site/resources/
+docs-site/.hugo_build.lock
