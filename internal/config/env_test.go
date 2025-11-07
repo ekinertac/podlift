@@ -2,7 +2,7 @@ package config
 
 import (
 	"os"
-	"strings"
+	"path/filepath"
 	"testing"
 )
 
@@ -177,21 +177,32 @@ func TestFindEnvFile(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
-	envPath := tmpdir + "/.env"
+	envPath := filepath.Join(tmpdir, ".env")
 	os.WriteFile(envPath, []byte("TEST=value"), 0644)
 
-	// Change to temp directory
-	oldDir, _ := os.Getwd()
-	os.Chdir(tmpdir)
-	defer os.Chdir(oldDir)
+	// Create config file path
+	configPath := filepath.Join(tmpdir, "podlift.yml")
 
-	// Find should find it
-	found := FindEnvFile()
+	// Find should find .env in same directory
+	found := FindEnvFile(configPath)
 	if found == "" {
 		t.Error("FindEnvFile() should find .env file")
 	}
-	if !strings.HasSuffix(found, ".env") {
-		t.Errorf("FindEnvFile() = %v, should end with .env", found)
+	if found != envPath {
+		t.Errorf("FindEnvFile() = %v, want %v", found, envPath)
+	}
+	
+	// Should return empty string if config path is empty
+	if found := FindEnvFile(""); found != "" {
+		t.Errorf("FindEnvFile(\"\") should return empty string, got %v", found)
+	}
+	
+	// Should return empty string if .env doesn't exist
+	otherDir, _ := os.MkdirTemp("", "podlift-env-test-other-*")
+	defer os.RemoveAll(otherDir)
+	otherConfig := filepath.Join(otherDir, "podlift.yml")
+	if found := FindEnvFile(otherConfig); found != "" {
+		t.Errorf("FindEnvFile() should return empty when .env missing, got %v", found)
 	}
 }
 

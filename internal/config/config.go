@@ -20,6 +20,9 @@ type Config struct {
 	Services     map[string]Service     `yaml:"services,omitempty"`
 	Proxy        *ProxyConfig           `yaml:"proxy,omitempty"`
 	Hooks        *HooksConfig           `yaml:"hooks,omitempty"`
+	
+	// Internal fields
+	configPath string // Path to the config file (not serialized)
 }
 
 // ServersConfig handles both list and map formats for servers
@@ -145,6 +148,9 @@ func Load(path string) (*Config, error) {
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse YAML: %w", err)
 	}
+
+	// Store config path for .env lookup
+	config.configPath = path
 
 	// Apply defaults
 	config.applyDefaults()

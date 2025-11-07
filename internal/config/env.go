@@ -85,33 +85,28 @@ func ExpandPath(path string) string {
 	return path
 }
 
-// FindEnvFile searches for .env file in current directory and parents
-func FindEnvFile() string {
-	dir, err := os.Getwd()
-	if err != nil {
+// FindEnvFile looks for .env in the same directory as podlift.yml
+func FindEnvFile(configPath string) string {
+	if configPath == "" {
 		return ""
 	}
-
-	for {
-		path := filepath.Join(dir, ".env")
-		if _, err := os.Stat(path); err == nil {
-			return path
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
+	
+	// Get directory containing config file
+	configDir := filepath.Dir(configPath)
+	envPath := filepath.Join(configDir, ".env")
+	
+	// Check if .env exists
+	if _, err := os.Stat(envPath); err == nil {
+		return envPath
 	}
-
+	
 	return ""
 }
 
 // SubstituteConfigEnvVars substitutes environment variables in config
 func (c *Config) SubstituteConfigEnvVars() error {
-	// Load .env file if it exists
-	envPath := FindEnvFile()
+	// Load .env file if it exists (same directory as podlift.yml)
+	envPath := FindEnvFile(c.configPath)
 	if envPath != "" {
 		if err := LoadEnv(envPath); err != nil {
 			return fmt.Errorf("failed to load .env file: %w", err)
