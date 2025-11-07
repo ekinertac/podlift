@@ -230,6 +230,7 @@ proxy:
 
 Quick links:
 - [Installation](https://ekinertac.github.io/podlift/docs/installation/) - Detailed setup guide
+- [Configuration Examples](https://ekinertac.github.io/podlift/docs/examples/) - Real-world use cases
 - [Commands](https://ekinertac.github.io/podlift/docs/commands/) - Complete CLI reference
 - [Configuration](https://ekinertac.github.io/podlift/docs/configuration/) - All configuration options
 - [Deployment Guide](https://ekinertac.github.io/podlift/docs/deployment-guide/) - Strategies, rollbacks, multi-server
