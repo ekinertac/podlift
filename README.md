@@ -23,9 +23,6 @@ Install podlift:
 # Quick install (Linux/macOS)
 curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
 
-# macOS (Homebrew)
-brew install ekinertac/tap/podlift
-
 # Or with Go
 go install github.com/ekinertac/podlift@latest
 

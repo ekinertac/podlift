@@ -29,7 +29,7 @@ Choose the method that works best for you:
 
 | Method | Best For | Updates |
 |--------|----------|---------|
-| Install Script | Quick setup, any platform | Re-run script |
+| Install Script (Recommended) | Quick setup, any platform | Re-run script |
 | Download Binary | Offline installs, specific versions | Manual download |
 | Go Install | Go developers | `go install ...@latest` |
 | Build from Source | Contributors, custom builds | `git pull && go build` |

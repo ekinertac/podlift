@@ -24,66 +24,20 @@ Choose the method that works best for you:
 
 | Method | Best For | Updates |
 |--------|----------|---------|
-| Package Manager | End users, automatic updates | `brew upgrade` / `apt upgrade` |
 | Install Script | Quick setup, any platform | Re-run script |
 | Download Binary | Offline installs, specific versions | Manual download |
 | Go Install | Go developers | `go install ...@latest` |
 | Build from Source | Contributors, custom builds | `git pull && go build` |
 
-### Option 1: Package Manager (Recommended)
-
-#### macOS (Homebrew)
+### Option 1: Install Script (Recommended)
 
 ```bash
-brew install ekinertac/tap/podlift
-```
-
-#### Linux (apt)
-
-```bash
-# Add podlift repository
-curl -fsSL https://apt.podlift.sh/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/podlift.gpg
-echo "deb [signed-by=/usr/share/keyrings/podlift.gpg] https://apt.podlift.sh stable main" | sudo tee /etc/apt/sources.list.d/podlift.list
-
-# Install
-sudo apt update
-sudo apt install podlift
-```
-
-#### Linux (yum/dnf)
-
-```bash
-# Add podlift repository
-sudo tee /etc/yum.repos.d/podlift.repo <<EOF
-[podlift]
-name=podlift
-baseurl=https://rpm.podlift.sh/stable
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm.podlift.sh/gpg.key
-EOF
-
-# Install
-sudo dnf install podlift
-# or: sudo yum install podlift
-```
-
-#### Arch Linux (AUR)
-
-```bash
-yay -S podlift-bin
-# or: paru -S podlift-bin
-```
-
-### Option 2: Install Script
-
-```bash
-curl -sSL https://podlift.sh/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
 ```
 
 This downloads the latest binary for your platform and installs it to `/usr/local/bin`.
 
-### Option 3: Download Binary
+### Option 2: Download Binary
 
 Visit [GitHub Releases](https://github.com/ekinertac/podlift/releases) and download for your platform:
 
@@ -523,18 +477,6 @@ podlift version
 
 ### Upgrade to Latest
 
-**Package managers:**
-```bash
-# macOS
-brew upgrade podlift
-
-# Linux (apt)
-sudo apt update && sudo apt upgrade podlift
-
-# Linux (yum/dnf)
-sudo dnf upgrade podlift
-```
-
 **Go install:**
 ```bash
 go install github.com/ekinertac/podlift@latest
@@ -542,7 +484,7 @@ go install github.com/ekinertac/podlift@latest
 
 **Install script:**
 ```bash
-curl -sSL https://podlift.sh/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
 ```
 
 **Manual:** Download latest release from GitHub.
