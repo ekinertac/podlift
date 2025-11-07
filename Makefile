@@ -1,6 +1,6 @@
 # podlift Makefile
 
-.PHONY: help build test install clean release verify
+.PHONY: help build test install clean release verify bump-patch bump-minor bump-major
 
 # Default target
 .DEFAULT_GOAL := help
@@ -78,3 +78,12 @@ dev: ## Build and install for development
 
 all: fmt vet test build ## Run fmt, vet, test, and build
 	@echo "✓ All checks passed"
+
+bump-patch: ## Bump patch version (1.0.0 -> 1.0.1) and create release
+	@./scripts/bump-version.sh patch
+
+bump-minor: ## Bump minor version (1.0.0 -> 1.1.0) and create release
+	@./scripts/bump-version.sh minor
+
+bump-major: ## Bump major version (1.0.0 -> 2.0.0) and create release
+	@./scripts/bump-version.sh major
