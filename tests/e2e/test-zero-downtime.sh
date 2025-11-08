@@ -217,6 +217,5 @@ echo -e "${GREEN}✅ Zero-Downtime Test Complete${NC}"
 echo "======================================="
 echo ""
 echo "VM will be cleaned up on exit."
-echo "Press Enter to cleanup..."
-read -t 30 || true
+echo ""
 

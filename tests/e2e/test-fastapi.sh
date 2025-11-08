@@ -271,7 +271,5 @@ echo "Health check: http://$IP:8000/health"
 echo "API docs: http://$IP:8000/docs"
 echo ""
 echo "VM will be cleaned up on exit."
-echo "Press Ctrl+C to cleanup and exit, or Enter to keep running for manual testing..."
-
-read -t 30 || true
+echo ""
 

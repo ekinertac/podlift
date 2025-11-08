@@ -124,9 +124,5 @@ echo "  3. Test deploy: podlift deploy (with config pointing to $IP)"
 echo "  4. Cleanup: multipass delete $VM_NAME && multipass purge"
 echo ""
 echo "VM will be automatically cleaned up when this script exits."
-echo "Press Ctrl+C to cleanup and exit."
 echo ""
-
-# Keep VM running for manual testing
-read -p "Press Enter to cleanup and exit..."
 
