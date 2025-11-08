@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Comprehensive E2E test suite for podlift
 # Tests all features: multi-server, load balancing, zero-downtime, rollback, etc.
+# Requires: bash 4.0+ (for associative arrays)
 
 set -e
 
@@ -158,7 +159,7 @@ launch_vm() {
     
     log_info "Launching VM: $vm_name (CPUs: $cpus, Memory: $memory)"
     
-    multipass launch --name "$vm_name" --cpus "$cpus" --memory "$memory" ubuntu:22.04
+    multipass launch --name "$vm_name" --cpus "$cpus" --memory "$memory" 22.04
     
     # Get IP
     local ip=$(multipass info "$vm_name" | grep IPv4 | awk '{print $2}')
