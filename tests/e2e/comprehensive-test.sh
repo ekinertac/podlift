@@ -56,7 +56,8 @@ cleanup() {
     echo -e "${GREEN}✓ Cleanup complete${NC}"
 }
 
-trap cleanup EXIT
+# TEMPORARILY DISABLED FOR DEBUGGING - Uncomment to enable cleanup
+# trap cleanup EXIT
 
 # Logging functions
 log_section() {
@@ -157,9 +158,9 @@ launch_vm() {
     local cpus="${2:-2}"
     local memory="${3:-2G}"
     
-    log_info "Launching VM: $vm_name (CPUs: $cpus, Memory: $memory)"
+    log_info "Launching VM: $vm_name (CPUs: $cpus, Memory: $memory)" >&2
     
-    multipass launch --name "$vm_name" --cpus "$cpus" --memory "$memory" 22.04
+    multipass launch --name "$vm_name" --cpus "$cpus" --memory "$memory" 22.04 >&2
     
     # Get IP
     local ip=$(multipass info "$vm_name" | grep IPv4 | awk '{print $2}')
@@ -167,14 +168,14 @@ launch_vm() {
     # Setup SSH
     if [ -f ~/.ssh/id_rsa.pub ]; then
         local pub_key=$(cat ~/.ssh/id_rsa.pub)
-        multipass exec "$vm_name" -- bash -c "mkdir -p ~/.ssh && echo '$pub_key' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+        multipass exec "$vm_name" -- bash -c "mkdir -p ~/.ssh && echo '$pub_key' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys" >&2
     fi
     
     # Track VM
     VMS+=("$vm_name")
     VM_IPS["$vm_name"]="$ip"
     
-    log_success "VM ready: $vm_name ($ip)"
+    log_success "VM ready: $vm_name ($ip)" >&2
     echo "$ip"
 }
 
@@ -198,6 +199,12 @@ wait_for_http() {
 # Check prerequisites
 check_prerequisites() {
     log_section "🔍 Checking Prerequisites"
+    
+    echo ""
+    echo -e "${YELLOW}⚠ CLEANUP DISABLED FOR DEBUGGING${NC}"
+    echo -e "${BLUE}Test directory: ${TEST_DIR}${NC}"
+    echo -e "${BLUE}VM prefix: ${VM_PREFIX}${NC}"
+    echo ""
     
     if ! command -v multipass &> /dev/null; then
         log_error "Multipass not installed"
