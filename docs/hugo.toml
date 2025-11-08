@@ -44,7 +44,7 @@ enableGitInfo = true
   BookCommitPath = 'commit'
 
   # (Optional, default 'edit') Specifies edit portion of the link to the page's source
-  BookEditPath = 'edit/main/docs-site'
+  BookEditPath = 'edit/main/docs'
 
   # (Optional, default true) Enables search function with flexsearch.
   BookSearch = true

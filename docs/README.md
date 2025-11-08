@@ -18,7 +18,7 @@ sudo dpkg -i hugo_extended_0.152.2_linux-amd64.deb
 Run locally:
 
 ```bash
-cd docs-site
+cd docs
 hugo server
 ```
 
