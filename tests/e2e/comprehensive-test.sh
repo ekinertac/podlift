@@ -3,7 +3,9 @@
 # Tests all features: multi-server, load balancing, zero-downtime, rollback, etc.
 # Requires: bash 4.0+ (for associative arrays)
 
+# Exit immediately on error
 set -e
+set -o pipefail
 
 # Colors
 GREEN='\033[0;32m'
@@ -98,10 +100,9 @@ assert_equals() {
     
     if [ "$expected" = "$actual" ]; then
         log_success "$message"
-        return 0
     else
         log_error "$message (expected: '$expected', got: '$actual')"
-        return 1
+        exit 1
     fi
 }
 
@@ -113,10 +114,10 @@ assert_contains() {
     
     if echo "$haystack" | grep -q "$needle"; then
         log_success "$message"
-        return 0
     else
         log_error "$message (expected to contain: '$needle')"
-        return 1
+        log_info "Actual output: $haystack"
+        exit 1
     fi
 }
 
@@ -130,10 +131,10 @@ assert_http_status() {
     
     if [ "$actual_status" = "$expected_status" ]; then
         log_success "$message"
-        return 0
     else
         log_error "$message (expected: $expected_status, got: $actual_status)"
-        return 1
+        log_info "URL: $url"
+        exit 1
     fi
 }
 
@@ -144,10 +145,9 @@ assert_command_success() {
     
     if "$@" >/dev/null 2>&1; then
         log_success "$message"
-        return 0
     else
         log_error "$message (command failed: $*)"
-        return 1
+        exit 1
     fi
 }
 
@@ -336,15 +336,26 @@ EOF
     git commit -m "Add podlift config"
     
     log_step "Setting up server..."
-    $PODLIFT_BIN setup --no-security --no-firewall
+    $PODLIFT_BIN setup --no-security --no-firewall || {
+        log_error "Server setup failed"
+        exit 1
+    }
     
     log_step "Deploying application..."
-    $PODLIFT_BIN deploy
+    $PODLIFT_BIN deploy || {
+        log_error "Deployment failed"
+        exit 1
+    }
     
     log_step "Waiting for application to start..."
-    sleep 5
+    sleep 10
+    
+    log_step "Checking if containers are running..."
+    log_info "Running 'podlift ps' to verify containers..."
+    $PODLIFT_BIN ps
     
     log_step "Testing deployment..."
+    log_info "Testing health endpoint: http://$ip:8000/health"
     assert_http_status "http://$ip:8000/health" "200" "Health check responds"
     
     local response=$(curl -s "http://$ip:8000/")
@@ -754,7 +765,7 @@ main() {
     echo ""
     echo -e "${PURPLE}╔════════════════════════════════════════╗${NC}"
     echo -e "${PURPLE}║                                        ║${NC}"
-    echo -e "${PURPLE}║  podlift Comprehensive E2E Test Suite ║${NC}"
+    echo -e "${PURPLE}║  podlift Comprehensive E2E Test Suite  ║${NC}"
     echo -e "${PURPLE}║                                        ║${NC}"
     echo -e "${PURPLE}╚════════════════════════════════════════╝${NC}"
     echo ""
