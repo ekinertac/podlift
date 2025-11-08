@@ -336,16 +336,27 @@ EOF
     git commit -m "Add podlift config"
     
     log_step "Setting up server..."
-    $PODLIFT_BIN setup --no-security --no-firewall || {
+    if ! $PODLIFT_BIN setup --no-security --no-firewall 2>&1; then
         log_error "Server setup failed"
+        echo ""
+        log_info "Configuration file:"
+        cat podlift.yml
+        echo ""
         exit 1
-    }
+    fi
     
     log_step "Deploying application..."
-    $PODLIFT_BIN deploy || {
+    if ! $PODLIFT_BIN deploy 2>&1; then
         log_error "Deployment failed"
+        echo ""
+        log_info "Configuration file:"
+        cat podlift.yml
+        echo ""
+        log_info "Checking VM status:"
+        multipass list | grep "${VM_PREFIX}-single"
+        echo ""
         exit 1
-    }
+    fi
     
     log_step "Waiting for application to start..."
     sleep 10
