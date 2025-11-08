@@ -1,6 +1,6 @@
 # podlift Makefile
 
-.PHONY: help build test install clean release verify bump-patch bump-minor bump-major bump-alpha bump-beta e2e e2e-quick e2e-comprehensive
+.PHONY: help build test install clean release verify bump-patch bump-minor bump-major bump-alpha bump-beta e2e-quick e2e-comprehensive
 
 # Default target
 .DEFAULT_GOAL := help
@@ -93,10 +93,6 @@ bump-alpha: ## Create alpha pre-release (1.0.2 -> 1.0.3-alpha.1)
 
 bump-beta: ## Create beta pre-release (1.0.2 -> 1.0.3-beta.1)
 	@./scripts/bump-version.sh beta
-
-e2e: ## Run E2E test selector (interactive)
-	@echo "Starting E2E test runner..."
-	@./tests/e2e/run-tests.sh
 
 e2e-quick: build ## Run quick E2E test (FastAPI example, ~3-5 min)
 	@echo "Running quick E2E test..."
