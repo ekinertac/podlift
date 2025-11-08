@@ -1,3 +1,8 @@
+---
+title: Installation
+weight: 10
+---
+
 # Installation
 
 Complete guide to installing and setting up podlift.

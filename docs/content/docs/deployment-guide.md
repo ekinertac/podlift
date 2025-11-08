@@ -1,6 +1,6 @@
 ---
 title: Deployment Guide
-weight: 40
+weight: 50
 ---
 
 # Deployment Guide

@@ -1,6 +1,6 @@
 ---
 title: How It Works
-weight: 50
+weight: 60
 ---
 
 # How podlift Works

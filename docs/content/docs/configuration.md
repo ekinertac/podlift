@@ -1,3 +1,8 @@
+---
+title: Configuration Reference
+weight: 30
+---
+
 # Configuration Reference
 
 Complete reference for `podlift.yml` configuration file.

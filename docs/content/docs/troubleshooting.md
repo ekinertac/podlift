@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-weight: 60
+weight: 70
 ---
 
 ### Error: Service name already in use
