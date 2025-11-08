@@ -192,71 +192,11 @@ done
 
 ## Automated E2E Tests
 
-### Comprehensive Test Suite (Recommended)
+See `tests/e2e/multipass-example.sh` for a complete automated test script.
 
-The comprehensive test suite tests all podlift features:
-- Single server deployment
-- Multi-server deployment
-- Load balancing
-- Zero-downtime deployments
-- Rollback
-- All commands (ps, logs, status, config, exec, etc.)
-- Deployment hooks
-- Dependencies with volumes
-- Environment variables
-
-**Run comprehensive tests:**
+**Run automated test:**
 ```bash
-./tests/e2e/comprehensive-test.sh
-```
-
-**Features tested:**
-- ✅ Single server deployment
-- ✅ Multi-server deployment with role-based targeting
-- ✅ Load balancer setup (nginx)
-- ✅ Zero-downtime deployment (continuous monitoring)
-- ✅ Rollback to previous version
-- ✅ All CLI commands
-- ✅ Deployment hooks (before_deploy, after_deploy)
-- ✅ Dependencies (postgres) with health checks
-- ✅ Volume persistence
-- ✅ Environment variable injection
-
-**Test output:**
-```
-🚀 Test 1: Single Server Deployment
-  ✓ Health check responds
-  ✓ Root endpoint works
-  ✓ Version is v1
-  ✓ podlift ps shows healthy status
-
-🌐 Test 2: Multi-Server Deployment
-  ✓ Web1 health check
-  ✓ Web2 health check
-  ✓ Load balancer is running
-  ✓ Postgres is running
-
-⚡ Test 3: Zero-Downtime Deployment
-  ✓ No downtime detected during deployment
-  ✓ Version 2 is deployed
-
-🔄 Test 4: Rollback
-  ✓ Currently on v2
-  ✓ Rolled back to v1
-
-📊 Test Summary
-Total Tests: 45
-Passed: 45
-Failed: 0
-✅ ALL TESTS PASSED!
-```
-
-### Quick FastAPI Test
-
-Simple test using the FastAPI example:
-
-```bash
-./tests/e2e/test-fastapi.sh
+./tests/e2e/multipass-example.sh
 ```
 
 ## Test Scenarios
