@@ -36,11 +36,25 @@ Choose the method that works best for you:
 
 ### Option 1: Install Script (Recommended)
 
+**System-wide installation** (requires sudo):
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | sh
 ```
 
-This downloads the latest binary for your platform and installs it to `/usr/local/bin`.
+**User-level installation** (no sudo required):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/ekinertac/podlift/main/install.sh | INSTALL_DIR="$HOME/.local/bin" sh
+```
+
+Then add to your shell profile (~/.bashrc or ~/.zshrc):
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+The system-wide install places the binary in `/usr/local/bin`. The user-level install uses `~/.local/bin`, which doesn't require admin privileges.
 
 ### Option 2: Download Binary
 

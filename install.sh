@@ -1,12 +1,16 @@
 #!/bin/sh
 # podlift installation script
-# Usage: curl -sSL https://podlift.sh/install.sh | sh
+# Usage: 
+#   curl -sSL https://podlift.sh/install.sh | sh
+#   
+#   # Install to user directory (no sudo):
+#   curl -sSL https://podlift.sh/install.sh | INSTALL_DIR="$HOME/.local/bin" sh
 
 set -e
 
 # Configuration
 REPO="ekinertac/podlift"
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BINARY_NAME="podlift"
 
 # Colors
@@ -98,11 +102,22 @@ download_binary() {
 install_binary() {
     echo "${BLUE}Installing to $INSTALL_DIR...${NC}"
     
+    # Create directory if it doesn't exist
+    if [ ! -d "$INSTALL_DIR" ]; then
+        if mkdir -p "$INSTALL_DIR" 2>/dev/null; then
+            echo "${GREEN}Created directory: $INSTALL_DIR${NC}"
+        else
+            echo "${YELLOW}Creating directory with sudo...${NC}"
+            sudo mkdir -p "$INSTALL_DIR"
+        fi
+    fi
+    
     # Check if we need sudo
     if [ -w "$INSTALL_DIR" ]; then
         mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
     else
-        echo "${YELLOW}Requesting sudo access for installation...${NC}"
+        echo "${YELLOW}Requesting sudo access to write to $INSTALL_DIR${NC}"
+        echo "${YELLOW}Tip: To install without sudo, use: INSTALL_DIR=\"\$HOME/.local/bin\" sh${NC}"
         sudo mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
     fi
     
@@ -116,8 +131,11 @@ install_binary() {
 verify_installation() {
     if ! command -v "$BINARY_NAME" >/dev/null 2>&1; then
         echo "${YELLOW}Warning: $BINARY_NAME not found in PATH${NC}"
-        echo "Add $INSTALL_DIR to your PATH:"
+        echo ""
+        echo "Add this to your shell profile (~/.bashrc, ~/.zshrc, etc.):"
         echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
+        echo ""
+        echo "Then run: source ~/.zshrc  (or restart your terminal)"
         return 1
     fi
     
