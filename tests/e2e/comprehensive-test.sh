@@ -490,6 +490,11 @@ test_zero_downtime() {
         return
     fi
     
+    log_step "Cleaning up old containers..."
+    # Stop all existing containers to avoid port conflicts
+    multipass exec "${VM_PREFIX}-web1" -- bash -c "docker ps -q | xargs -r docker stop" >/dev/null 2>&1 || true
+    multipass exec "${VM_PREFIX}-web1" -- bash -c "docker ps -aq | xargs -r docker rm" >/dev/null 2>&1 || true
+    
     log_step "Creating simple single-server config..."
     cat > podlift.yml <<EOF
 service: test-app
@@ -513,6 +518,10 @@ EOF
     
     git add podlift.yml
     git commit -m "Simplify config for zero-downtime test"
+    
+    log_step "Deploying v1 to single server..."
+    $PODLIFT_BIN deploy
+    sleep 5
     
     log_step "Starting continuous request monitoring..."
     local monitor_file="/tmp/downtime-test-$$.log"
