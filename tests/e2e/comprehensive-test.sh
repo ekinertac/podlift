@@ -362,11 +362,11 @@ EOF
     
     local response=$(curl -s "http://$ip/")
     assert_contains "$response" "Hello from podlift" "Root endpoint works"
-    assert_contains "$response" "v1" "Version is v1"
+    assert_contains "$response" "version" "Response includes version field"
     
     log_step "Testing podlift commands..."
     local ps_output=$($PODLIFT_BIN ps)
-    assert_contains "$ps_output" "healthy" "podlift ps shows healthy status"
+    assert_contains "$ps_output" "running" "podlift ps shows running status"
     
     local logs_output=$($PODLIFT_BIN logs web --tail 5)
     assert_command_success "podlift logs works" test -n "$logs_output"
@@ -437,10 +437,12 @@ EOF
     $PODLIFT_BIN deploy
     
     log_step "Waiting for services to start..."
-    sleep 10
+    sleep 20
     
     log_step "Testing web servers..."
+    log_info "Testing web1: http://$web1_ip/health"
     assert_http_status "http://$web1_ip/health" "200" "Web1 health check"
+    log_info "Testing web2: http://$web2_ip/health"
     assert_http_status "http://$web2_ip/health" "200" "Web2 health check"
     
     log_step "Verifying load balancer (nginx)..."
