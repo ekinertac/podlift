@@ -51,15 +51,14 @@ func SetupLoadBalancer(cfg *config.Config, version string) error {
 	var upstreams []nginx.Upstream
 	
 	for _, srv := range allServers {
-		for serviceName, service := range cfg.Services {
-			for replica := 1; replica <= service.Replicas; replica++ {
-				// Use the deployed container port (exposed on host)
-				upstreams = append(upstreams, nginx.Upstream{
-					Name: fmt.Sprintf("%s-%s-%d", srv.Host, serviceName, replica),
-					Host: srv.Host,
-					Port: service.Port,
-				})
-			}
+		for serviceName := range cfg.Services {
+			// Load balancer proxies to nginx on each server (port 80)
+			// nginx on each server then proxies to the local containers
+			upstreams = append(upstreams, nginx.Upstream{
+				Name: fmt.Sprintf("%s-%s", srv.Host, serviceName),
+				Host: srv.Host,
+				Port: 80, // Always use port 80 (nginx)
+			})
 		}
 	}
 
