@@ -42,6 +42,9 @@ func (m *Manager) Install() error {
 	if err != nil {
 		return fmt.Errorf("nginx installation failed: %w", err)
 	}
+	
+	// Disable default site to avoid conflicts with our configuration
+	m.client.Execute("sudo rm -f /etc/nginx/sites-enabled/default")
 
 	fmt.Println(ui.Success("nginx installed"))
 	return nil

@@ -44,7 +44,7 @@ upstream {{ .ServiceName }} {
 }
 
 server {
-    listen 80;
+    listen 80 default_server;
     server_name {{ .Domain }};
 
 {{- if .SSL.Enabled }}
