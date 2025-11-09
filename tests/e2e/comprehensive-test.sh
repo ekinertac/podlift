@@ -67,12 +67,10 @@ log_step() {
 
 log_success() {
     echo "✓ $1"
-    TESTS_PASSED=$((TESTS_PASSED + 1))
 }
 
 log_error() {
     echo "✗ $1"
-    TESTS_FAILED=$((TESTS_FAILED + 1))
 }
 
 log_warning() {
@@ -91,8 +89,10 @@ assert_equals() {
     local message="$3"
     
     if [ "$expected" = "$actual" ]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         log_success "$message"
     else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         log_error "$message (expected: '$expected', got: '$actual')"
         exit 1
     fi
@@ -105,8 +105,10 @@ assert_contains() {
     local message="$3"
     
     if echo "$haystack" | grep -q "$needle"; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         log_success "$message"
     else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         log_error "$message (expected to contain: '$needle')"
         log_info "Actual output: $haystack"
         exit 1
@@ -122,8 +124,10 @@ assert_http_status() {
     local actual_status=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
     
     if [ "$actual_status" = "$expected_status" ]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         log_success "$message"
     else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         log_error "$message (expected: $expected_status, got: $actual_status)"
         log_info "URL: $url"
         exit 1
@@ -136,8 +140,10 @@ assert_command_success() {
     shift
     
     if "$@" >/dev/null 2>&1; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         log_success "$message"
     else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         log_error "$message (command failed: $*)"
         exit 1
     fi
@@ -472,11 +478,11 @@ EOF
 test_zero_downtime() {
     log_section "⚡ Test 3: Zero-Downtime Deployment"
     
-    log_step "Using single server for zero-downtime test..."
-    local test_ip="${VM_IPS["${VM_PREFIX}-single"]}"
+    log_step "Using web1 server for zero-downtime test..."
+    local test_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
     
     if [ -z "$test_ip" ]; then
-        log_error "Single server IP not found, skipping test"
+        log_error "Web1 IP not found, skipping test"
         return
     fi
     
@@ -572,7 +578,7 @@ PYTHON
 test_rollback() {
     log_section "🔄 Test 4: Rollback"
     
-    local test_ip="${VM_IPS["${VM_PREFIX}-single"]}"
+    local test_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
     
     if [ -z "$test_ip" ]; then
         log_error "Single server IP not found, skipping test"
@@ -617,7 +623,7 @@ test_all_commands() {
     assert_command_success "version command works" $PODLIFT_BIN version
     
     log_step "Testing 'podlift exec'..."
-    local test_ip="${VM_IPS["${VM_PREFIX}-single"]}"
+    local test_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
     if [ -n "$test_ip" ]; then
         # Try to exec into container
         local exec_output=$($PODLIFT_BIN exec web -- echo "test" 2>/dev/null || echo "")
@@ -636,7 +642,7 @@ test_hooks() {
     log_section "🪝 Test 6: Deployment Hooks"
     
     log_step "Adding hooks to config..."
-    local test_ip="${VM_IPS["${VM_PREFIX}-single"]}"
+    local test_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
     
     if [ -z "$test_ip" ]; then
         log_error "Single server IP not found, skipping test"
@@ -678,8 +684,8 @@ EOF
     sleep 3
     
     log_step "Verifying hooks executed..."
-    local before_hook=$(multipass exec "${VM_PREFIX}-single" -- cat /tmp/podlift-hook-before 2>/dev/null || echo "")
-    local after_hook=$(multipass exec "${VM_PREFIX}-single" -- cat /tmp/podlift-hook-after 2>/dev/null || echo "")
+    local before_hook=$(multipass exec "${VM_PREFIX}-web1" -- cat /tmp/podlift-hook-before 2>/dev/null || echo "")
+    local after_hook=$(multipass exec "${VM_PREFIX}-web1" -- cat /tmp/podlift-hook-after 2>/dev/null || echo "")
     
     assert_contains "$before_hook" "Before deploy" "before_deploy hook executed"
     assert_contains "$after_hook" "After deploy" "after_deploy hook executed"
@@ -699,7 +705,7 @@ test_dependencies() {
 test_environment_variables() {
     log_section "🔐 Test 8: Environment Variables"
     
-    local test_ip="${VM_IPS["${VM_PREFIX}-single"]}"
+    local test_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
     
     if [ -z "$test_ip" ]; then
         log_warning "Single server not found, skipping test"
@@ -707,10 +713,10 @@ test_environment_variables() {
     fi
     
     log_step "Checking environment variables in container..."
-    local container_name=$(multipass exec "${VM_PREFIX}-single" -- docker ps --filter "label=podlift.service=test-app" --format "{{.Names}}" | head -1 2>/dev/null || echo "")
+    local container_name=$(multipass exec "${VM_PREFIX}-web1" -- docker ps --filter "label=podlift.service=test-app" --format "{{.Names}}" | head -1 2>/dev/null || echo "")
     
     if [ -n "$container_name" ]; then
-        local env_check=$(multipass exec "${VM_PREFIX}-single" -- docker exec "$container_name" env 2>/dev/null || echo "")
+        local env_check=$(multipass exec "${VM_PREFIX}-web1" -- docker exec "$container_name" env 2>/dev/null || echo "")
         assert_contains "$env_check" "APP_VERSION" "Environment variables are set"
         log_success "✅ Environment variables test passed"
     else
