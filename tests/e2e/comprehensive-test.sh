@@ -168,12 +168,11 @@ launch_vm() {
         multipass exec "$vm_name" -- bash -c "mkdir -p ~/.ssh && echo '$pub_key' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys" >&2
     fi
     
-    # Track VM
+    # Track VM (global arrays - no subshell issue)
     VMS+=("$vm_name")
     VM_IPS["$vm_name"]="$ip"
     
     log_success "VM ready: $vm_name ($ip)" >&2
-    echo "$ip"
 }
 
 wait_for_http() {
@@ -307,7 +306,8 @@ test_single_server() {
     log_section "🚀 Test 1: Single Server Deployment"
     
     log_step "Launching single server..."
-    local ip=$(launch_vm "${VM_PREFIX}-single")
+    launch_vm "${VM_PREFIX}-single"
+    local ip="${VM_IPS["${VM_PREFIX}-single"]}"
     
     log_step "Creating podlift config..."
     cat > podlift.yml <<EOF
@@ -386,9 +386,13 @@ test_multi_server() {
     log_section "🌐 Test 2: Multi-Server Deployment"
     
     log_step "Launching multiple servers..."
-    local web1_ip=$(launch_vm "${VM_PREFIX}-web1")
-    local web2_ip=$(launch_vm "${VM_PREFIX}-web2")
-    local db_ip=$(launch_vm "${VM_PREFIX}-db" 2 4G)
+    launch_vm "${VM_PREFIX}-web1"
+    launch_vm "${VM_PREFIX}-web2"
+    launch_vm "${VM_PREFIX}-db" 2 4G
+    
+    local web1_ip="${VM_IPS["${VM_PREFIX}-web1"]}"
+    local web2_ip="${VM_IPS["${VM_PREFIX}-web2"]}"
+    local db_ip="${VM_IPS["${VM_PREFIX}-db"]}"
     
     log_step "Creating multi-server config..."
     cat > podlift.yml <<EOF
