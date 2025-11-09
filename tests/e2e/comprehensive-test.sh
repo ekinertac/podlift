@@ -7,15 +7,6 @@
 set -e
 set -o pipefail
 
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -36,9 +27,9 @@ declare -A VM_IPS
 # Cleanup function
 cleanup() {
     echo ""
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BLUE}🧹 Cleaning up test environment...${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🧹 Cleaning up test environment..."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # Stop any background processes
     jobs -p | xargs kill -9 2>/dev/null || true
@@ -53,43 +44,42 @@ cleanup() {
     # Clean up test directory
     rm -rf "$TEST_DIR"
     
-    echo -e "${GREEN}✓ Cleanup complete${NC}"
+    echo "✓ Cleanup complete"
 }
 
-# TEMPORARILY DISABLED FOR DEBUGGING - Uncomment to enable cleanup
-# trap cleanup EXIT
+trap cleanup EXIT
 
 # Logging functions
 log_section() {
     echo ""
-    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${PURPLE}$1${NC}"
-    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "$1"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 }
 
 log_step() {
     echo ""
-    echo -e "${CYAN}[$STEP] $1${NC}"
+    echo "[$STEP] $1"
     STEP=$((STEP + 1))
 }
 
 log_success() {
-    echo -e "${GREEN}✓ $1${NC}"
+    echo "✓ $1"
     TESTS_PASSED=$((TESTS_PASSED + 1))
 }
 
 log_error() {
-    echo -e "${RED}✗ $1${NC}"
+    echo "✗ $1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠ $1${NC}"
+    echo "⚠ $1"
 }
 
 log_info() {
-    echo -e "${BLUE}  $1${NC}"
+    echo "  $1"
 }
 
 # Test assertion functions
@@ -199,12 +189,6 @@ wait_for_http() {
 # Check prerequisites
 check_prerequisites() {
     log_section "🔍 Checking Prerequisites"
-    
-    echo ""
-    echo -e "${YELLOW}⚠ CLEANUP DISABLED FOR DEBUGGING${NC}"
-    echo -e "${BLUE}Test directory: ${TEST_DIR}${NC}"
-    echo -e "${BLUE}VM prefix: ${VM_PREFIX}${NC}"
-    echo ""
     
     if ! command -v multipass &> /dev/null; then
         log_error "Multipass not installed"
@@ -373,10 +357,10 @@ EOF
     $PODLIFT_BIN ps
     
     log_step "Testing deployment..."
-    log_info "Testing health endpoint: http://$ip:8000/health"
-    assert_http_status "http://$ip:8000/health" "200" "Health check responds"
+    log_info "Testing health endpoint: http://$ip/health"
+    assert_http_status "http://$ip/health" "200" "Health check responds"
     
-    local response=$(curl -s "http://$ip:8000/")
+    local response=$(curl -s "http://$ip/")
     assert_contains "$response" "Hello from podlift" "Root endpoint works"
     assert_contains "$response" "v1" "Version is v1"
     
@@ -456,8 +440,8 @@ EOF
     sleep 10
     
     log_step "Testing web servers..."
-    assert_http_status "http://$web1_ip:8000/health" "200" "Web1 health check"
-    assert_http_status "http://$web2_ip:8000/health" "200" "Web2 health check"
+    assert_http_status "http://$web1_ip/health" "200" "Web1 health check"
+    assert_http_status "http://$web2_ip/health" "200" "Web2 health check"
     
     log_step "Verifying load balancer (nginx)..."
     # Primary server should have nginx
@@ -499,7 +483,7 @@ test_zero_downtime() {
     # Background process to make continuous requests
     (
         for i in {1..60}; do
-            if ! curl -s -f "http://$web1_ip:8000/health" >/dev/null 2>&1; then
+            if ! curl -s -f "http://$web1_ip/health" >/dev/null 2>&1; then
                 echo "DOWNTIME at $(date +%s)" >> "$monitor_file"
             fi
             sleep 0.5
@@ -574,7 +558,7 @@ PYTHON
     
     log_step "Verifying v2 is deployed..."
     sleep 3
-    local response=$(curl -s "http://$web1_ip:8000/")
+    local response=$(curl -s "http://$web1_ip/")
     assert_contains "$response" "v2" "Version 2 is deployed"
     
     log_success "✅ Zero-downtime deployment test passed"
@@ -592,7 +576,7 @@ test_rollback() {
     fi
     
     log_step "Current version should be v2..."
-    local before_response=$(curl -s "http://$web1_ip:8000/")
+    local before_response=$(curl -s "http://$web1_ip/")
     assert_contains "$before_response" "v2" "Currently on v2"
     
     log_step "Performing rollback..."
@@ -601,7 +585,7 @@ test_rollback() {
     sleep 5
     
     log_step "Verifying rollback to v1..."
-    local after_response=$(curl -s "http://$web1_ip:8000/")
+    local after_response=$(curl -s "http://$web1_ip/")
     assert_contains "$after_response" "v1" "Rolled back to v1"
     
     log_success "✅ Rollback test passed"
@@ -752,9 +736,9 @@ print_summary() {
     echo ""
     log_section "📊 Test Summary"
     
-    echo -e "${BLUE}Total Tests Run:    ${NC}$TESTS_RUN"
-    echo -e "${GREEN}Tests Passed:       ${NC}$TESTS_PASSED"
-    echo -e "${RED}Tests Failed:       ${NC}$TESTS_FAILED"
+    echo "Total Tests Run:    $TESTS_RUN"
+    echo "Tests Passed:       $TESTS_PASSED"
+    echo "Tests Failed:       $TESTS_FAILED"
     echo ""
     
     local success_rate=0
@@ -762,18 +746,18 @@ print_summary() {
         success_rate=$((TESTS_PASSED * 100 / TESTS_RUN))
     fi
     
-    echo -e "${BLUE}Success Rate:       ${NC}${success_rate}%"
+    echo "Success Rate:       ${success_rate}%"
     echo ""
     
     if [ $TESTS_FAILED -eq 0 ]; then
-        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${GREEN}✅ ALL TESTS PASSED!${NC}"
-        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ ALL TESTS PASSED!"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         return 0
     else
-        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${RED}❌ SOME TESTS FAILED${NC}"
-        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "❌ SOME TESTS FAILED"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         return 1
     fi
 }
@@ -781,11 +765,11 @@ print_summary() {
 # Main test execution
 main() {
     echo ""
-    echo -e "${PURPLE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${PURPLE}║                                        ║${NC}"
-    echo -e "${PURPLE}║  podlift Comprehensive E2E Test Suite  ║${NC}"
-    echo -e "${PURPLE}║                                        ║${NC}"
-    echo -e "${PURPLE}╚════════════════════════════════════════╝${NC}"
+    echo "╔════════════════════════════════════════╗"
+    echo "║                                        ║"
+    echo "║  podlift Comprehensive E2E Test Suite  ║"
+    echo "║                                        ║"
+    echo "╚════════════════════════════════════════╝"
     echo ""
     
     local start_time=$(date +%s)
@@ -807,7 +791,7 @@ main() {
     local duration=$((end_time - start_time))
     
     echo ""
-    echo -e "${BLUE}Test Duration: ${duration}s${NC}"
+    echo "Test Duration: ${duration}s"
     
     print_summary
 }
