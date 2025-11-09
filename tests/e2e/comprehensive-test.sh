@@ -490,6 +490,30 @@ test_zero_downtime() {
         return
     fi
     
+    log_step "Creating simple single-server config..."
+    cat > podlift.yml <<EOF
+service: test-app
+image: test-app
+
+servers:
+  - host: $test_ip
+    user: ubuntu
+    ssh_key: ~/.ssh/id_rsa
+
+services:
+  web:
+    port: 8000
+    replicas: 1
+    healthcheck:
+      path: /health
+      expect: [200]
+    env:
+      APP_VERSION: \${GIT_COMMIT}
+EOF
+    
+    git add podlift.yml
+    git commit -m "Simplify config for zero-downtime test"
+    
     log_step "Starting continuous request monitoring..."
     local monitor_file="/tmp/downtime-test-$$.log"
     local downtime_detected=0
