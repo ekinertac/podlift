@@ -9,6 +9,17 @@ type: docs
 
 podlift is a modern deployment tool that makes deploying containerized applications simple, fast, and reliable. Built for developers who want production-grade deployments without the complexity of Kubernetes.
 
+## Prerequisites
+
+Before using podlift, your project needs:
+- **Dockerfile** - For building your application container
+- **docker-compose.yml** (optional) - For local development and testing
+
+podlift will:
+1. Build your Docker image from your Dockerfile
+2. Deploy it to your servers with zero-downtime
+3. Handle nginx, SSL, load balancing, and dependencies automatically
+
 ## Quick Start
 
 Install podlift:
@@ -115,8 +126,28 @@ hooks:
 
 ## Quick Example
 
+Your project structure:
+```
+myapp/
+├── Dockerfile              # Required: Defines your app container
+├── docker-compose.yml      # Optional: For local development
+├── podlift.yml            # Created by: podlift init
+└── src/                   # Your application code
+```
+
+Example `Dockerfile`:
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+Example `podlift.yml`:
 ```yaml
-# podlift.yml
 service:
   name: myapp
   domain: myapp.com
