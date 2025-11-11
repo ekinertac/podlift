@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-weight: 40
+weight: 32
 ---
 
 # Command Reference
